@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2048</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; background: #faf8ef; overflow: hidden; }
+
+    #loading-screen {
+      position: fixed; inset: 0; background: #faf8ef;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 18px; z-index: 100;
+    }
+    #loading-screen .thumb {
+      width: 160px; height: 160px; object-fit: cover; border-radius: 12px;
+      box-shadow: 0 4px 24px #bbada044;
+    }
+    #loading-screen h2 {
+      font-family: 'Arial Rounded MT Bold', 'Arial', sans-serif;
+      font-size: 48px; font-weight: bold;
+      color: #776e65;
+    }
+    #loading-screen .progress-wrap {
+      width: 260px; height: 6px; background: #d8c8b0; border-radius: 3px; overflow: hidden;
+    }
+    #loading-screen .progress-fill {
+      height: 100%; background: #f59563;
+      width: 0%; transition: width 0.3s; border-radius: 3px;
+    }
+    #loading-screen .cdn-label {
+      font-family: sans-serif; color: #bbada0; font-size: 11px;
+    }
+
+    #gameContainer {
+      width: 100%; height: 100%; display: none;
+      position: fixed; inset: 0;
+      overflow: auto;
+    }
+  </style>
+</head>
+<body>
+
+<div id="loading-screen">
+  <img class="thumb"
+    src="https://freezenova.com/lessons/2048.webp"
+    alt="2048"
+    onerror="this.style.display='none'">
+  <h2>2048</h2>
+  <div class="progress-wrap"><div class="progress-fill" id="pf"></div></div>
+  <div class="cdn-label" id="cdn-label">読み込み中...</div>
+</div>
+
+<div id="gameContainer"></div>
+
+<script>
+(function () {
+  var CACHE_VER = "1";
+
+  var JSDELIVR_BASE = "https://cdn.jsdelivr.net/gh/kuru-bana/Games@main/Other/2048";
+  var GHRAW_BASE    = "https://raw.githubusercontent.com/kuru-bana/Games/main/Other/2048";
+
+  function v(url) { return url + "?v=" + CACHE_VER; }
+
+  var pfEl      = document.getElementById('pf');
+  var cdnLabel  = document.getElementById('cdn-label');
+  var loadingEl = document.getElementById('loading-screen');
+  var container = document.getElementById('gameContainer');
+
+  var started = false;
+  function showGame() {
+    if (started) return;
+    started = true;
+    setTimeout(function () {
+      loadingEl.style.display = 'none';
+      container.style.display = 'block';
+    }, 400);
+  }
+
+  function showError(msg) {
+    loadingEl.innerHTML =
+      '<h2 style="color:#f59563;font-family:sans-serif;">読み込み失敗</h2>' +
+      '<p style="color:#bbada0;font-family:sans-serif;font-size:13px;">' + (msg || 'CDN に接続できませんでした') + '</p>';
+  }
+
+  function setProgress(p) {
+    pfEl.style.width = Math.round(p * 100) + '%';
+  }
+
+  function injectCSS(base, cb) {
+    var link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = v(base + '/style/main.css');
+    link.onload = cb;
+    link.onerror = cb;
+    document.head.appendChild(link);
+  }
+
+  var JS_FILES = [
+    'js/bind_polyfill.js',
+    'js/classlist_polyfill.js',
+    'js/animframe_polyfill.js',
+    'js/keyboard_input_manager.js',
+    'js/html_actuator.js',
+    'js/grid.js',
+    'js/tile.js',
+    'js/local_storage_manager.js',
+    'js/game_manager.js',
+    'js/application.js',
+  ];
+
+  function loadScripts(base, files, onDone) {
+    var idx = 0;
+    setProgress(0);
+    function next() {
+      if (idx >= files.length) { onDone(); return; }
+      var s = document.createElement('script');
+      s.src = v(base + '/' + files[idx]);
+      s.onload = function () { idx++; setProgress(idx / files.length); next(); };
+      s.onerror = function () { onDone(files[idx]); };
+      document.body.appendChild(s);
+    }
+    next();
+  }
+
+  function buildGameDOM(base) {
+    container.innerHTML = `
+      <div style="min-height:100%;background:#faf8ef;padding:20px 0;">
+        <div class="container">
+          <div class="heading">
+            <h1 class="title">2048</h1>
+            <div class="scores-container">
+              <div class="score-container">0</div>
+              <div class="best-container">0</div>
+            </div>
+          </div>
+          <div class="above-game">
+            <p class="game-intro">数字を合わせて <strong>2048</strong> を目指そう！</p>
+            <a class="restart-button">New Game</a>
+          </div>
+          <div class="game-container">
+            <div class="game-message">
+              <p></p>
+              <div class="lower">
+                <a class="keep-playing-button">Keep going</a>
+                <a class="retry-button">Try again</a>
+              </div>
+            </div>
+            <div class="grid-container">
+              <div class="grid-row"><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div></div>
+              <div class="grid-row"><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div></div>
+              <div class="grid-row"><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div></div>
+              <div class="grid-row"><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div></div>
+            </div>
+            <div class="tile-container"></div>
+          </div>
+          <p class="game-explanation"><strong>操作:</strong> 矢印キーまたはスワイプでタイルを移動。同じ数字が合わさると合体！</p>
+        </div>
+      </div>`;
+  }
+
+  function start(base) {
+    cdnLabel.textContent = 'CSS 読み込み中...';
+    injectCSS(base, function () {
+      cdnLabel.textContent = 'スクリプト読み込み中...';
+      buildGameDOM(base);
+      loadScripts(base, JS_FILES, function (failedFile) {
+        if (failedFile) { showError('ファイル読み込み失敗: ' + failedFile); return; }
+        showGame();
+      });
+    });
+  }
+
+  function tryLoad() {
+    var sources = [JSDELIVR_BASE, GHRAW_BASE];
+    var idx = 0;
+    function tryNext() {
+      if (idx >= sources.length) { showError('両方の CDN に接続できませんでした'); return; }
+      var base = sources[idx++];
+      var label = base.includes('jsdelivr') ? 'jsDelivr' : 'GitHub Raw';
+      cdnLabel.textContent = label + ' から読み込み中...';
+      var testScript = document.createElement('script');
+      testScript.src = v(base + '/js/bind_polyfill.js');
+      testScript.onload = function () { start(base); };
+      testScript.onerror = tryNext;
+      document.body.appendChild(testScript);
+    }
+    tryNext();
+  }
+
+  tryLoad();
+})();
+</script>
+</body>
+</html>

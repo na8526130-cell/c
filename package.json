@@ -1,0 +1,16 @@
+{
+  "name": "choco-tube-plus",
+  "version": "1.48.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js",
+    "build": "node -e \"console.log('Build completed')\""
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "express": "^5.2.1",
+    "nunjucks": "^3.2.4"
+  }
+}

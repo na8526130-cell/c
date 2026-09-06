@@ -1,0 +1,84 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+[hidden] { display: none !important; }
+
+:root {
+  --bg: #050914;
+  --surface: rgba(13, 8, 40, 0.82);
+  --surface2: rgba(22, 14, 58, 0.9);
+  --border: rgba(139, 92, 246, 0.22);
+  --border-glow: rgba(139, 92, 246, 0.55);
+  --accent: #7c3aed;
+  --accent-bright: #a78bfa;
+  --cyan: #06b6d4;
+  --pink: #ec4899;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --card-bg: rgba(9, 5, 28, 0.72);
+  --glow-purple: rgba(124, 58, 237, 0.45);
+  --glow-cyan: rgba(6, 182, 212, 0.35);
+  --skeleton-base: rgba(22, 14, 58, 0.9);
+  --skeleton-shine: rgba(45, 28, 100, 0.9);
+  --accent-rgb: 124, 58, 237;
+  --accent2-rgb: 139, 92, 246;
+  --cyan-rgb: 6, 182, 212;
+  --accent-glow-rgb: 167, 139, 250;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+.header-refresh-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  transition: color 0.2s, background 0.2s, transform 0.4s;
+  flex-shrink: 0;
+}
+.header-refresh-btn:hover { color: var(--accent-bright); background: rgba(139,92,246,0.12); }
+.header-refresh-btn.spinning svg { animation: spin360 0.6s linear; }
+@keyframes spin360 { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+.header-ui-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.38rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.18s, border-color 0.18s, background 0.18s;
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
+}
+.header-ui-btn:hover {
+  color: var(--accent-bright);
+  border-color: var(--border-glow);
+  background: var(--surface);
+}
+.header-ui-btn.ui-btn-pro {
+  color: #d2691e;
+  border-color: rgba(210,140,70,0.45);
+  background: rgba(139,69,19,0.12);
+}
+.header-ui-btn.ui-btn-pro:hover {
+  background: rgba(139,69,19,0.22);
+  border-color: rgba(210,140,70,0.7);
+}
+

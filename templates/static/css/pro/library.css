@@ -1,0 +1,156 @@
+/* ===== PRO THEME – library.css OVERRIDES ONLY =====
+   All layout rules live in library.css (loaded first).
+   This file overrides only what differs in the pro theme. */
+
+/* ===== LIBRARY PAGE ===== */
+
+body.page-library .lib-import-msg.lib-import-ok {
+  color: #c89968;
+}
+
+body.page-library .lib-import-msg.lib-import-err {
+  color: #d49060;
+}
+
+/* ===== TABS ===== */
+
+/* ===== CONTENT PANELS ===== */
+
+/* ===== CHANNEL GRID ===== */
+
+body.page-library .lib-unsub-btn {
+  color: #d49060;
+}
+
+body.page-library .lib-unsub-btn:hover {
+  border-color: #d49060;
+}
+
+/* ===== HISTORY TOOLBAR ===== */
+
+body.page-library .lib-clear-btn {
+  color: #d49060;
+}
+
+/* ===== HISTORY DATE TAG ===== */
+
+/* ===== PLAYLIST GRID ===== */
+
+/* ===== PLAYLIST DETAIL ===== */
+
+/* ===== PLAYLIST VIDEO LIST ===== */
+
+body.page-library .lib-pl-item-remove:hover {
+  color: #d49060;
+}
+
+/* ===== NEW PLAYLIST MODAL ===== */
+
+/* ===== FAVORITE CARD WRAP (individual delete) ===== */
+
+body.page-library .fav-del-btn {
+  background: rgba(26, 14, 8, 0.82);
+}
+
+/* ===== FAVORITES SUB-TABS ===== */
+
+/* ===== FAVORITES PLAYLIST/MIX CARD (as link) ===== */
+
+/* ===== PLAYLIST / MIX FAVORITE BUTTON ===== */
+
+.pl-fav-btn:hover {
+  color: #b8512a;
+}
+
+.pl-fav-btn.active {
+  color: #b8512a;
+}
+
+/* ===== DOWNLOAD PAGE ===== */
+
+/* ===== URL INPUT FORM ===== */
+
+body.page-dl .dl-form-icon {
+  background: rgba(160, 82, 45, 0.15);
+  border: 1.5px solid rgba(160, 82, 45, 0.35);
+  box-shadow: 0 0 28px rgba(160, 82, 45, 0.2);
+}
+
+body.page-dl .dl-url-input:focus {
+  box-shadow: 0 0 0 3px rgba(160, 82, 45, 0.15);
+}
+
+body.page-dl .dl-url-btn:hover {
+  background: #6b3410;
+}
+
+body.page-dl .dl-url-error {
+  color: #d49060;
+}
+
+/* ===== RESULT AREA ===== */
+
+body.page-dl .dl-spinner {
+  border: 3px solid rgba(160, 82, 45, 0.25);
+}
+
+@keyframes dl-spin { to { transform: rotate(360deg); } }
+
+body.page-dl .dl-fetch-error {
+  color: #d49060;
+}
+
+/* ===== HERO ===== */
+
+@media (max-width: 640px) {
+  body.page-dl .dl-hero {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+body.page-dl .dl-stream-btn:hover {
+  background: #6b3410;
+}
+
+body.page-dl .dl-instance-item:hover {
+  background: rgba(160, 82, 45, 0.12);
+}
+
+body.page-dl .dl-watch-btn {
+  background: rgba(160, 82, 45, 0.12);
+}
+
+body.page-dl .dl-yt-link {
+  color: #cd853f;
+}
+
+/* ===== DOWNLOAD SECTIONS ===== */
+
+body.page-dl .dls-item:hover {
+  background: rgba(160, 82, 45, 0.05);
+}
+
+body.page-dl .dls-item-sheet:hover {
+  background: rgba(160, 82, 45, 0.08);
+}
+
+body.page-dl .dls-btn {
+  background: rgba(160, 82, 45, 0.13);
+}
+
+body.page-dl .dls-thumb-card:hover {
+  box-shadow: 0 4px 16px rgba(160, 82, 45, 0.15);
+}
+
+body.page-dl .dls-thumb-card-btn {
+  background: rgba(160, 82, 45, 0.12);
+}
+
+@media (max-width: 520px) {
+  body.page-dl .dl-url-input-wrap { flex-direction: column; }
+  body.page-dl .dl-url-btn { width: 100%; justify-content: center; }
+  body.page-dl .dls-item { flex-wrap: wrap; }
+  body.page-dl .dls-btn { width: 100%; justify-content: center; }
+  body.page-dl .dls-thumb-grid { grid-template-columns: 1fr 1fr; }
+}

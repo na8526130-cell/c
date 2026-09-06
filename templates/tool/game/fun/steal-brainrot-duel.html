@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Steal Brainrot Duel</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; background: #000; overflow: hidden; }
+
+    #loading-screen {
+      position: fixed;
+      inset: 0;
+      background: #0a0a0f;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      z-index: 100;
+    }
+
+    #loading-screen .thumb {
+      width: 280px;
+      height: 158px;
+      object-fit: cover;
+      border-radius: 12px;
+      border: 2px solid #7c3aed55;
+      box-shadow: 0 4px 24px #7c3aed44;
+    }
+
+    #loading-screen h2 {
+      font-family: 'Segoe UI', sans-serif;
+      font-size: 22px;
+      background: linear-gradient(90deg, #a855f7, #ec4899);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    #loading-screen .progress-wrap {
+      width: 300px;
+      height: 6px;
+      background: #1a1a2e;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    #loading-screen .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #7c3aed, #ec4899);
+      width: 0%;
+      transition: width 0.2s;
+      border-radius: 3px;
+    }
+
+    #loading-screen .pct {
+      font-family: monospace;
+      color: #888;
+      font-size: 13px;
+    }
+
+    #loading-screen .cdn-label {
+      font-family: monospace;
+      color: #444;
+      font-size: 11px;
+    }
+
+    div#gameContainer {
+      background: transparent !important;
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      visibility: hidden; opacity: 0;
+    }
+
+    div#gameContainer canvas {
+      position: absolute;
+      width: 100% !important;
+      height: 100% !important;
+    }
+  </style>
+</head>
+<body>
+
+<div id="loading-screen">
+  <img class="thumb" src="https://freezenova.com/lessons/img/steal-brainrot-duel-2.webp" alt="Steal Brainrot Duel" onerror="this.style.display='none'">
+  <h2>⚔️ Steal Brainrot Duel</h2>
+  <div class="progress-wrap"><div class="progress-fill" id="pf"></div></div>
+  <div class="pct" id="pct">0%</div>
+  <div class="cdn-label" id="cdn-label">CDNに接続中...</div>
+</div>
+
+<div id="gameContainer">
+  <canvas id="unity-canvas" data-pixel-art=""></canvas>
+</div>
+
+<script>
+  var CDN_PROVIDERS = [
+    "https://cdn.jsdelivr.net/gh/kuru-bana/Games@main/FreezeNova",
+    "https://raw.githubusercontent.com/kuru-bana/Games/main/FreezeNova"
+  ];
+
+  function loadWithFallback(subpath, onSuccess, onFail) {
+    var providers = CDN_PROVIDERS.slice();
+    var idx = 0;
+    function tryNext() {
+      if (idx >= providers.length) { if (onFail) onFail(); return; }
+      var base = providers[idx++];
+      document.getElementById('cdn-label').textContent =
+        (base.includes('jsdelivr') ? 'jsDelivr' : 'GitHub Raw') + ' から読み込み中...';
+      var s = document.createElement('script');
+      s.src = base + subpath;
+      s.onload = function() { onSuccess(base); };
+      s.onerror = tryNext;
+      document.body.appendChild(s);
+    }
+    tryNext();
+  }
+
+  var canvas = document.querySelector('#unity-canvas');
+  var config = {
+    streamingAssetsUrl: 'StreamingAssets',
+    companyName: 'gameVgames',
+    productName: 'Steal Brainrot Duel',
+    productVersion: '1.0.0',
+  };
+
+  function progressHandler(progress) {
+    var pct = Math.round(progress * 100);
+    document.getElementById('pf').style.width = pct + '%';
+    document.getElementById('pct').textContent = pct + '%';
+  }
+
+  function onResize() {
+    var container = canvas.parentElement;
+    var w = window.innerWidth;
+    var h = window.innerHeight;
+    var r = 600 / 960;
+    if (w * r > window.innerHeight) w = Math.min(w, Math.ceil(h / r));
+    h = Math.floor(w * r);
+    container.style.width = canvas.style.width = w + 'px';
+    container.style.height = canvas.style.height = h + 'px';
+    container.style.top = Math.floor((window.innerHeight - h) / 2) + 'px';
+    container.style.left = Math.floor((window.innerWidth - w) / 2) + 'px';
+  }
+
+  loadWithFallback('/steal-brainrot-duel/Build/Steal_Brainrot_FreezeNovaV3.loader.js',
+    function(activeBase) {
+      var B = activeBase + '/steal-brainrot-duel/Build';
+      config.dataUrl      = B + '/Steal_Brainrot_FreezeNovaV3.data.unityweb';
+      config.frameworkUrl = B + '/Steal_Brainrot_FreezeNovaV3.framework.js.unityweb';
+      config.codeUrl      = B + '/Steal_Brainrot_FreezeNovaV3.wasm.unityweb';
+      onResize();
+      createUnityInstance(canvas, config, progressHandler).then(function(instance) {
+        window.gameInstance = instance;
+        setTimeout(function() {
+          document.getElementById('loading-screen').style.display = 'none';
+          var gc = document.getElementById('gameContainer');
+          gc.style.visibility = 'visible';
+          gc.style.opacity = '1';
+          canvas = instance.Module.canvas;
+          onResize();
+        }, 1000);
+      }).catch(function(err) { console.error('Unity load error:', err); });
+    },
+    function() {
+      document.getElementById('loading-screen').innerHTML =
+        '<h2 style="color:#ef4444;font-family:sans-serif;">CDNからの読み込みに失敗しました</h2>' +
+        '<p style="color:#888;font-family:sans-serif;font-size:13px;">jsDelivr・GitHub Raw どちらも応答なし</p>';
+    }
+  );
+
+  window.addEventListener('resize', onResize);
+
+  function SubmitLeaderboardScore(newScore) {}
+  function GetLeaderboardEntries() {}
+  function InitApi(_appId) { window.callTime = Math.round(Date.now() / 1000) - 181; }
+  function InitExternEval(_appId) {}
+  function ExternEval() {}
+  function ExternEvalResumeGame() {}
+  function PreloadRewarded() {}
+  function ShowRewarded() {}
+  function RewardedReady() {}
+  function RewardedSuccess() {}
+  function RewardedFail() {}
+  function RewardedClose() {}
+  InitApi(0);
+</script>
+</body>
+</html>

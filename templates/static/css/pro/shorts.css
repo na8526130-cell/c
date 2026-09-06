@@ -1,0 +1,6 @@
+/* ===== PRO THEME – SHORTS OVERRIDES ===== */
+/* Overrides only the ~2 lines that differ from the base (shorts.css).  */
+/* All shared rules live in shorts.css which is loaded first.           */
+:root {
+  --shorts-icon-gradient: linear-gradient(135deg, #b8512a, #cd853f);
+}

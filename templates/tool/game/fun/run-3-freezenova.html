@@ -1,0 +1,108 @@
+\<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Run 3 Freezenova</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; background: #060c18; overflow: hidden; }
+    #loading-screen {
+      position: fixed; inset: 0; background: #060c18;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 20px; z-index: 100;
+    }
+    #loading-screen .thumb {
+      width: 280px; height: 158px; object-fit: cover; border-radius: 12px;
+      border: 2px solid #0ea5e955; box-shadow: 0 4px 24px #0ea5e944;
+    }
+    #loading-screen h2 {
+      font-family: 'Segoe UI', sans-serif; font-size: 22px;
+      background: linear-gradient(90deg, #38bdf8, #818cf8);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    #loading-screen .progress-wrap { width: 300px; height: 6px; background: #0d1b2e; border-radius: 3px; overflow: hidden; }
+    #loading-screen .progress-fill { height: 100%; background: linear-gradient(90deg, #0ea5e9, #6366f1); width: 0%; transition: width 0.2s; border-radius: 3px; }
+    #loading-screen .pct { font-family: monospace; color: #3a7aaa; font-size: 13px; }
+    #loading-screen .cdn-label { font-family: monospace; color: #1e3a5f; font-size: 11px; }
+    div#gameContainer { background: transparent !important; position: absolute; top: 0 !important; width: 100% !important; height: 100% !important; left: 0 !important; visibility: hidden; opacity: 0; }
+    div#gameContainer canvas { position: absolute; width: 100% !important; height: 100% !important; }
+  </style>
+</head>
+<body>
+<div id="loading-screen">
+  <img class="thumb" src="https://freezenova.com/lessons/img2/run-freezenova.webp" alt="Run 3 Freezenova" onerror="this.style.display='none'">
+  <h2>🏃 Run 3 Freezenova</h2>
+  <div class="progress-wrap"><div class="progress-fill" id="pf"></div></div>
+  <div class="pct" id="pct">0%</div>
+  <div class="cdn-label" id="cdn-label">CDNに接続中...</div>
+</div>
+<div id="gameContainer">
+  <canvas id="unity-canvas" data-pixel-art=""></canvas>
+</div>
+<script>
+var CDN_PROVIDERS = [
+  "https://cdn.jsdelivr.net/gh/kuru-bana/Games@main/FreezeNova",
+  "https://raw.githubusercontent.com/kuru-bana/Games/main/FreezeNova"
+];
+
+function loadWithFallback(subpath, onSuccess, onFail) {
+  var providers = CDN_PROVIDERS.slice(), idx = 0;
+  function tryNext() {
+    if (idx >= providers.length) { if (onFail) onFail(); return; }
+    var base = providers[idx++];
+    document.getElementById('cdn-label').textContent =
+      (base.includes('jsdelivr') ? 'jsDelivr' : 'GitHub Raw') + ' から読み込み中...';
+    var s = document.createElement('script');
+    s.src = base + subpath;
+    s.onload = function() { onSuccess(base); };
+    s.onerror = tryNext;
+    document.body.appendChild(s);
+  }
+  tryNext();
+}
+
+var canvas = document.getElementById('unity-canvas');
+var config = { streamingAssetsUrl: 'StreamingAssets' };
+
+function progressHandler(p) {
+  var pct = Math.round(p * 100);
+  document.getElementById('pf').style.width = pct + '%';
+  document.getElementById('pct').textContent = pct + '%';
+}
+
+function onResize() {
+  var container = canvas.parentElement;
+  var w = window.innerWidth, h = window.innerHeight;
+  container.style.width = canvas.style.width = w + 'px';
+  container.style.height = canvas.style.height = h + 'px';
+}
+
+loadWithFallback('/run-3-freezenova/Build/game.loader.js',
+  function(base) {
+    var B = base + '/run-3-freezenova/Build';
+    config.dataUrl      = B + '/game.data.unityweb';
+    config.frameworkUrl = B + '/game.framework.js.unityweb';
+    config.codeUrl      = B + '/game.wasm.unityweb';
+    onResize();
+    createUnityInstance(canvas, config, progressHandler).then(function(inst) {
+      window.gameInstance = inst;
+      setTimeout(function() {
+        document.getElementById('loading-screen').style.display = 'none';
+        var gc = document.getElementById('gameContainer');
+        gc.style.visibility = 'visible';
+        gc.style.opacity = '1';
+        onResize();
+      }, 1000);
+    }).catch(function(e) { console.error(e); });
+  },
+  function() {
+    document.getElementById('loading-screen').innerHTML =
+      '<h2 style="color:#ef4444;font-family:sans-serif;">CDNからの読み込みに失敗しました</h2>' +
+      '<p style="color:#888;font-family:sans-serif;font-size:13px;">jsDelivr・GitHub Raw どちらも応答なし</p>';
+  }
+);
+window.addEventListener('resize', onResize);
+</script>
+</body>
+</html>

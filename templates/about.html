@@ -1,0 +1,591 @@
+{% extends "base.html" %}
+{% block title %}Choco-Tube-Plus について{% endblock %}
+{% block body_class %}about-page{% endblock %}
+{% block head %}
+<style>
+/* ── About専用背景: starfieldを隠して独自背景に差し替え ── */
+body.about-page #starfield { display: none !important; }
+body.about-page {
+  background:
+    radial-gradient(ellipse 90% 55% at 15% 8%,  rgba(139,69,19,0.35) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 55% at 85% 85%, rgba(90,35,8,0.30)   0%, transparent 55%),
+    radial-gradient(ellipse 50% 45% at 55% 42%, rgba(200,90,20,0.10)  0%, transparent 50%),
+    #0c0a08 !important;
+}
+
+.about-main {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 28px 16px 72px;
+}
+
+/* ── ページタイトル ── */
+.about-hero {
+  text-align: center;
+  margin-bottom: 36px;
+}
+.about-logo {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: clamp(1.6rem, 5vw, 2.4rem);
+  font-weight: 900;
+  letter-spacing: .03em;
+  display: block;
+  margin-bottom: 6px;
+}
+.about-logo .logo-inv { color: var(--accent-color, #d2691e); }
+.about-logo .logo-tube { color: var(--accent-secondary, #f4a460); }
+.about-tagline {
+  font-size: .78rem;
+  color: var(--text-secondary, #8a9bb0);
+  letter-spacing: .1em;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+/* ── カード共通 ── */
+.about-card {
+  background: var(--card-bg, rgba(20,25,40,0.7));
+  border: 1px solid var(--card-border, rgba(99,115,150,0.18));
+  border-radius: 16px;
+  padding: 22px 22px 20px;
+  margin-bottom: 20px;
+}
+.about-card-title {
+  font-size: .72rem;
+  font-family: 'Share Tech Mono', monospace;
+  letter-spacing: .1em;
+  color: var(--text-secondary, #8a9bb0);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.about-card-title svg { flex-shrink: 0; }
+.about-card-title .title-line {
+  flex: 1; height: 1px;
+  background: var(--card-border, rgba(99,115,150,0.18));
+}
+
+/* ── 説明文 ── */
+.about-desc-text {
+  font-size: .88rem;
+  line-height: 1.75;
+  color: var(--text-primary, #e2e8f0);
+  white-space: pre-line;
+}
+.about-desc-placeholder {
+  color: var(--text-secondary, #8a9bb0);
+  font-size: .82rem;
+  font-style: italic;
+}
+
+/* ── バージョン ── */
+.version-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.version-block {
+  text-align: center;
+  background: var(--bg-secondary, rgba(10,14,26,0.6));
+  border: 1px solid var(--card-border, rgba(99,115,150,0.18));
+  border-radius: 12px;
+  padding: 14px 24px;
+  min-width: 130px;
+}
+.version-label {
+  font-size: .65rem;
+  font-family: 'Share Tech Mono', monospace;
+  letter-spacing: .1em;
+  color: var(--text-secondary, #8a9bb0);
+  margin-bottom: 5px;
+}
+.version-num {
+  font-size: 1.5rem;
+  font-weight: 900;
+  font-family: 'Share Tech Mono', monospace;
+  color: var(--accent-secondary, #f4a460);
+}
+.version-arrow {
+  font-size: 1.2rem;
+  color: var(--text-secondary, #8a9bb0);
+}
+.version-status {
+  margin-top: 10px;
+  font-size: .72rem;
+  font-family: 'Share Tech Mono', monospace;
+  text-align: center;
+}
+.version-status.up-to-date { color: #4ade80; }
+.version-status.outdated { color: #fb923c; }
+.version-status.loading { color: var(--text-secondary, #8a9bb0); }
+
+/* ── 開発者 ── */
+.dev-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.dev-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+.dev-role-badge {
+  font-size: .65rem;
+  font-family: 'Share Tech Mono', monospace;
+  padding: 3px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.dev-role-badge.main {
+  background: rgba(210,105,30,0.15);
+  color: #f4a460;
+  border: 1px solid rgba(210,105,30,0.3);
+}
+.dev-role-badge.collab {
+  background: rgba(99,115,150,0.12);
+  color: var(--text-secondary, #8a9bb0);
+  border: 1px solid var(--card-border, rgba(99,115,150,0.18));
+}
+.dev-info { flex: 1; }
+.dev-name {
+  font-size: .95rem;
+  font-weight: 700;
+  color: var(--text-primary, #e2e8f0);
+  margin-bottom: 5px;
+}
+.dev-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.dev-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: .73rem;
+  color: var(--text-secondary, #8a9bb0);
+  text-decoration: none;
+  padding: 3px 9px;
+  background: var(--bg-secondary, rgba(10,14,26,0.5));
+  border: 1px solid var(--card-border, rgba(99,115,150,0.18));
+  border-radius: 6px;
+  transition: color .15s, border-color .15s, background .15s;
+}
+.dev-link:hover {
+  color: var(--accent-secondary, #f4a460);
+  border-color: rgba(210,105,30,0.4);
+  background: rgba(210,105,30,0.08);
+}
+.dev-link img {
+  width: 13px; height: 13px;
+  border-radius: 2px;
+  opacity: .75;
+}
+
+/* ── 更新履歴 ── */
+.changelog-wrap {
+  max-height: 360px;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  border-radius: 10px;
+  background: var(--bg-secondary, rgba(10,14,26,0.6));
+  border: 1px solid var(--card-border, rgba(99,115,150,0.15));
+  padding: 16px 18px;
+}
+.changelog-wrap::-webkit-scrollbar { width: 5px; }
+.changelog-wrap::-webkit-scrollbar-track { background: transparent; }
+.changelog-wrap::-webkit-scrollbar-thumb {
+  background: var(--card-border, rgba(99,115,150,0.3));
+  border-radius: 999px;
+}
+/* Markdown rendered styles */
+.changelog-wrap h1,.changelog-wrap h2,.changelog-wrap h3 {
+  font-size: .88rem; font-weight: 700;
+  color: var(--accent-secondary, #f4a460);
+  margin: 14px 0 6px;
+  font-family: 'Share Tech Mono', monospace;
+  letter-spacing: .04em;
+}
+.changelog-wrap h1:first-child,.changelog-wrap h2:first-child,.changelog-wrap h3:first-child { margin-top: 0; }
+.changelog-wrap p {
+  font-size: .82rem;
+  color: var(--text-primary, #e2e8f0);
+  line-height: 1.65;
+  margin-bottom: 6px;
+}
+.changelog-wrap ul {
+  padding-left: 16px;
+  margin: 4px 0 10px;
+}
+.changelog-wrap li {
+  font-size: .82rem;
+  color: var(--text-primary, #e2e8f0);
+  line-height: 1.6;
+  margin-bottom: 3px;
+}
+.changelog-wrap a {
+  color: var(--accent-secondary, #f4a460);
+  text-decoration: none;
+}
+.changelog-wrap a:hover { text-decoration: underline; }
+.changelog-wrap code {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: .78rem;
+  background: rgba(99,115,150,0.15);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+.changelog-loading {
+  font-size: .8rem;
+  color: var(--text-secondary, #8a9bb0);
+  text-align: center;
+  padding: 16px 0;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+/* ── お問い合わせボタン ── */
+.contact-btn-wrap {
+  text-align: center;
+}
+.contact-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: .82rem 2rem;
+  background: linear-gradient(135deg, #8b4513, #c46a25);
+  border: none;
+  border-radius: 12px;
+  color: #f5ead8;
+  font-size: .9rem;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity .2s, transform .15s, box-shadow .2s;
+  box-shadow: 0 4px 20px rgba(139,69,19,0.4);
+}
+.contact-btn:hover {
+  opacity: .9;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 26px rgba(210,105,30,0.5);
+}
+.contact-btn:active { transform: translateY(0); }
+
+/* ── 初回バナー ── */
+.first-login-banner {
+  background: linear-gradient(135deg, rgba(210,105,30,0.12), rgba(139,69,19,0.08));
+  border: 1px solid rgba(210,105,30,0.3);
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+  font-size: .8rem;
+  color: var(--accent-secondary, #f4a460);
+  cursor: pointer;
+  transition: opacity .5s ease, transform .5s ease, max-height .5s ease, margin-bottom .5s ease, padding .5s ease;
+  overflow: hidden;
+  max-height: 120px;
+}
+.first-login-banner.hide {
+  opacity: 0;
+  transform: translateY(-6px);
+  max-height: 0;
+  margin-bottom: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  pointer-events: none;
+}
+.first-login-banner svg { flex-shrink: 0; }
+.first-login-banner strong { color: #f5ead8; }
+
+@media(max-width:520px) {
+  .version-row { gap: 10px; }
+  .version-block { padding: 12px 16px; min-width: 110px; }
+}
+</style>
+{% endblock %}
+{% block content %}
+<main class="about-main">
+  {% if is_first_visit %}
+  <div class="first-login-banner" id="firstLoginBanner">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    <span><strong>ようこそ！</strong> Choco-Tube-Plus へ初めてログインしました。このページはいつでも「概要」から再確認できます。</span>
+  </div>
+  {% endif %}
+
+  <div class="about-hero">
+    <span class="about-logo">
+      <span class="logo-inv">Choco</span><span class="logo-tube">-Tube-Plus</span>
+    </span>
+    <div class="about-tagline">// PRIVATE YOUTUBE EXPERIENCE</div>
+  </div>
+
+  <!-- 説明文 -->
+  <div class="about-card">
+    <div class="about-card-title">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      ABOUT
+      <div class="title-line"></div>
+    </div>
+    <div id="aboutDescWrap">
+      <div class="about-desc-placeholder">読み込み中...</div>
+    </div>
+  </div>
+
+  <!-- バージョン -->
+  <div class="about-card">
+    <div class="about-card-title">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      VERSION
+      <div class="title-line"></div>
+    </div>
+    <div class="version-row">
+      <div class="version-block">
+        <div class="version-label">CURRENT</div>
+        <div class="version-num" id="verCurrent">...</div>
+      </div>
+      <div class="version-arrow">→</div>
+      <div class="version-block">
+        <div class="version-label">LATEST</div>
+        <div class="version-num" id="verLatest">...</div>
+      </div>
+    </div>
+    <div class="version-status loading" id="verStatus">バージョン情報を確認中...</div>
+  </div>
+
+  <!-- 開発者 -->
+  <div class="about-card">
+    <div class="about-card-title">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      DEVELOPERS
+      <div class="title-line"></div>
+    </div>
+    <div class="dev-list">
+      <div class="dev-item">
+        <span class="dev-role-badge main">開発者</span>
+        <div class="dev-info">
+          <div class="dev-name">ばなな (choco)</div>
+          <div class="dev-links">
+            <a href="https://scratch.mit.edu/users/kurumaebi-1515" class="dev-link" target="_blank" rel="noopener">
+              <img src="https://scratch.mit.edu/favicon.ico" alt="">Scratch
+            </a>
+            <a href="https://github.com/kuru-bana" class="dev-link" target="_blank" rel="noopener">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="13" height="13"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+              kuru-bana
+            </a>
+            <a href="https://github.com/banana-coco" class="dev-link" target="_blank" rel="noopener">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="13" height="13"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+              banana-coco
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="dev-item">
+        <span class="dev-role-badge collab">開発協力</span>
+        <div class="dev-info">
+          <div class="dev-name">2A_exe さん</div>
+          <div class="dev-links">
+            <a href="https://scratch.mit.edu/users/2A_exe" class="dev-link" target="_blank" rel="noopener">
+              <img src="https://scratch.mit.edu/favicon.ico" alt="">Scratch
+            </a>
+            <a href="https://github.com/c00lkimx01-creator" class="dev-link" target="_blank" rel="noopener">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="13" height="13"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+              c00lkimx01-creator
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="dev-item">
+        <span class="dev-role-badge collab">開発協力</span>
+        <div class="dev-info">
+          <div class="dev-name">ねむい さん</div>
+          <div class="dev-links">
+            <a href="https://scratch.mit.edu/users/sleepy-300" class="dev-link" target="_blank" rel="noopener">
+              <img src="https://scratch.mit.edu/favicon.ico" alt="">Scratch
+            </a>
+            <a href="https://github.com/myproxy0108-prog" class="dev-link" target="_blank" rel="noopener">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="13" height="13"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+              myproxy0108-prog
+            </a>
+            <a href="https://github.com/myproxy0107-hash" class="dev-link" target="_blank" rel="noopener">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="13" height="13"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+              myproxy0107-hash
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 更新履歴 -->
+  <div class="about-card">
+    <div class="about-card-title">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      更新履歴
+      <div class="title-line"></div>
+    </div>
+    <div class="changelog-wrap" id="changelogWrap">
+      <div class="changelog-loading">読み込み中...</div>
+    </div>
+    <div style="text-align:right;margin-top:8px">
+      <a href="https://github.com/kuru-bana/Choco-Tube-Plus#%E6%9B%B4%E6%96%B0%E5%B1%A5%E6%AD%B4" target="_blank" rel="noopener"
+         style="font-size:.72rem;color:var(--text-secondary,#8a9bb0);text-decoration:none;font-family:'Share Tech Mono',monospace;transition:color .15s"
+         onmouseover="this.style.color='#f4a460'" onmouseout="this.style.color=''">
+        GitHub で全履歴を見る →
+      </a>
+    </div>
+  </div>
+
+  <!-- お問い合わせ -->
+  <div class="about-card">
+    <div class="about-card-title">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      お問い合わせ
+      <div class="title-line"></div>
+    </div>
+    <p style="font-size:.83rem;color:var(--text-secondary,#8a9bb0);margin-bottom:16px;line-height:1.6">
+      バグ報告・機能要望・質問などはこちらからどうぞ。
+    </p>
+    <div class="contact-btn-wrap">
+      <a href="/contact" class="contact-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="18" height="18"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        お問い合わせフォームを開く
+      </a>
+    </div>
+  </div>
+</main>
+
+<script>
+(function(){
+  /* ── 初回ウェルカム: タップ or 3秒で / にリダイレクト ── */
+  {% if is_first_visit %}
+  (function(){
+    let gone = false;
+    function goHome() {
+      if (gone) return;
+      gone = true;
+      const banner = document.getElementById('firstLoginBanner');
+      if (banner) banner.classList.add('hide');
+      setTimeout(function(){ window.location.replace('/'); }, 450);
+    }
+    document.addEventListener('click', goHome, { once: true });
+    document.addEventListener('touchend', goHome, { once: true });
+    setTimeout(goHome, 3000);
+  })();
+  {% endif %}
+
+  const ABOUT_TXT = 'https://raw.githubusercontent.com/kuru-bana/Choco-Tube-Plus/refs/heads/main/about.txt';
+  const VERSION_JSON = 'https://raw.githubusercontent.com/kuru-bana/Choco-Tube-Plus/refs/heads/main/version.json';
+  const README_URL = 'https://raw.githubusercontent.com/kuru-bana/Choco-Tube-Plus/refs/heads/main/README.md';
+  let currentVer = 0;
+
+  /* ── 説明文 ── */
+  fetch(ABOUT_TXT, {cache:'no-store'})
+    .then(r => r.ok ? r.text() : null)
+    .then(text => {
+      const wrap = document.getElementById('aboutDescWrap');
+      if (text && text.trim()) {
+        const p = document.createElement('div');
+        p.className = 'about-desc-text';
+        p.textContent = text.trim();
+        wrap.innerHTML = '';
+        wrap.appendChild(p);
+      } else {
+        wrap.innerHTML = '<div class="about-desc-placeholder">説明文は準備中です。</div>';
+      }
+    })
+    .catch(() => {
+      document.getElementById('aboutDescWrap').innerHTML =
+        '<div class="about-desc-placeholder">説明文を読み込めませんでした。</div>';
+    });
+
+  /* ── バージョン ── */
+  Promise.all([
+    fetch('/version').then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch(VERSION_JSON, {cache:'no-store'}).then(r => r.ok ? r.json() : null).catch(() => null)
+  ]).then(([localData, remoteData]) => {
+    const current = localData && localData.ver ? localData.ver : null;
+    const latest = Array.isArray(remoteData) ? remoteData[0] : (remoteData && remoteData.version ? remoteData.version : null);
+    if (current != null) {
+      currentVer = parseFloat(current) || 0;
+      document.getElementById('verCurrent').textContent = current;
+    } else {
+      document.getElementById('verCurrent').textContent = '?';
+    }
+    const statusEl = document.getElementById('verStatus');
+    if (latest != null) {
+      document.getElementById('verLatest').textContent = latest;
+      if (parseFloat(latest) <= currentVer) {
+        statusEl.textContent = '✓ 最新バージョンです';
+        statusEl.className = 'version-status up-to-date';
+      } else {
+        statusEl.textContent = `⚠ 新しいバージョン ${latest} があります`;
+        statusEl.className = 'version-status outdated';
+      }
+    } else {
+      document.getElementById('verLatest').textContent = '?';
+      statusEl.textContent = 'バージョン情報を取得できませんでした';
+      statusEl.className = 'version-status loading';
+    }
+  });
+
+  /* ── 更新履歴 (README から抽出) ── */
+  fetch(README_URL, {cache:'no-store'})
+    .then(r => r.ok ? r.text() : null)
+    .then(md => {
+      const wrap = document.getElementById('changelogWrap');
+      if (!md) throw new Error();
+
+      /* 更新履歴セクションを抽出 */
+      const lines = md.split('\n');
+      let inSection = false;
+      const sectionLines = [];
+      for (const line of lines) {
+        if (/^#{1,3}\s*更新履歴/.test(line)) { inSection = true; continue; }
+        if (inSection && /^#{1,2}\s/.test(line)) break;
+        if (inSection) sectionLines.push(line);
+      }
+
+      if (sectionLines.length === 0) {
+        wrap.innerHTML = '<div class="changelog-loading">更新履歴はまだありません。</div>';
+        return;
+      }
+
+      /* シンプルなMarkdownパーサー */
+      function parseMd(lines) {
+        let html = '';
+        for (const line of lines) {
+          const l = line.trim();
+          if (!l) { html += '<br>'; continue; }
+          if (/^###\s/.test(l)) { html += `<h3>${esc(l.slice(4))}</h3>`; continue; }
+          if (/^##\s/.test(l)) { html += `<h3>${esc(l.slice(3))}</h3>`; continue; }
+          if (/^#\s/.test(l)) { html += `<h3>${esc(l.slice(2))}</h3>`; continue; }
+          if (/^[-*]\s/.test(l)) { html += `<li>${inlinemd(esc(l.slice(2)))}</li>`; continue; }
+          html += `<p>${inlinemd(esc(l))}</p>`;
+        }
+        return html.replace(/(<li>.*?<\/li>)+/gs, m => `<ul>${m}</ul>`);
+      }
+      function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+      function inlinemd(s){
+        return s
+          .replace(/`([^`]+)`/g,'<code>$1</code>')
+          .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
+          .replace(/\*([^*]+)\*/g,'<em>$1</em>')
+          .replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+      }
+
+      wrap.innerHTML = parseMd(sectionLines);
+    })
+    .catch(() => {
+      document.getElementById('changelogWrap').innerHTML =
+        '<div class="changelog-loading">更新履歴を読み込めませんでした。</div>';
+    });
+})();
+</script>
+{% endblock %}

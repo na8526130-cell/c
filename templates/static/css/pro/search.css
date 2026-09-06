@@ -1,0 +1,195 @@
+/* ===== PRO THEME – search.css OVERRIDES ONLY =====
+   All layout rules live in search.css (loaded first).
+   This file overrides only what differs in the pro theme. */
+
+/* ===== SEARCH WRAPPER ===== */
+
+/* ===== SUGGESTIONS ===== */
+
+.suggestions-list {
+  border: 1px solid rgba(160, 82, 45, 0.4);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 20px rgba(139, 69, 19, 0.2);
+}
+
+.suggestion-item:hover,
+.suggestion-item.active {
+  background: rgba(139, 69, 19, 0.18);
+  color: #e8c9a0;
+}
+
+.suggest-history-header {
+  border-bottom: 1px solid rgba(160, 82, 45, 0.15);
+}
+
+.suggest-clear-btn:hover {
+  background: rgba(139, 69, 19, 0.18);
+}
+
+/* ===== FILTER BAR ===== */
+
+.filter-bar {
+  background: rgba(26, 14, 8, 0.85);
+  border-bottom: 1px solid rgba(160, 82, 45, 0.18);
+  box-shadow: 0 2px 20px rgba(139, 69, 19, 0.08);
+}
+
+.filter-select {
+  background: rgba(45, 26, 16, 0.85);
+  border: 1px solid rgba(160, 82, 45, 0.25);
+}
+
+.filter-select:focus,
+.filter-select:hover {
+  box-shadow: 0 0 10px rgba(139, 69, 19, 0.3);
+}
+
+.filter-select option {
+  background: #1f120a;
+}
+
+/* ===== FEATURES DROPDOWN ===== */
+
+.features-toggle {
+  background: rgba(45, 26, 16, 0.85);
+  border: 1px solid rgba(160, 82, 45, 0.25);
+}
+
+.features-toggle:hover,
+.features-toggle.active {
+  box-shadow: 0 0 10px rgba(139, 69, 19, 0.3);
+}
+
+.features-dropdown {
+  border: 1px solid rgba(160, 82, 45, 0.4);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 20px rgba(139, 69, 19, 0.2);
+}
+
+.feature-item:hover {
+  color: #e8c9a0;
+}
+
+/* ===== RESULT HEADER ===== */
+
+.result-header {
+  color: #8a7864;
+}
+
+/* ===== CHANNEL CARD ===== */
+
+.channel-card-icon {
+  border: 2px solid rgba(160, 82, 45, 0.4);
+  box-shadow: 0 0 14px rgba(139, 69, 19, 0.3);
+}
+
+.verified-badge {
+  color: #1f120a;
+}
+
+.channel-card-subs {
+  color: #a89888;
+}
+
+.channel-card-desc {
+  color: #8a7864;
+}
+
+/* ===== PLAYLIST CARD ===== */
+
+.playlist-count-badge {
+  color: #deb887;
+  border: 1px solid rgba(160, 82, 45, 0.3);
+}
+
+/* ===== PAGINATION ===== */
+
+.page-btn {
+  background: rgba(45, 26, 16, 0.85);
+  border: 1px solid rgba(160, 82, 45, 0.3);
+}
+
+.page-btn:hover:not(:disabled) {
+  background: rgba(139, 69, 19, 0.15);
+}
+
+/* ===== RESPONSIVE ===== */
+
+@media (max-width: 700px) {
+  .filter-bar-inner { gap: 0.4rem; }
+  .filter-label { display: none; }
+  .channel-card-desc { display: none; }
+  .filter-bar { top: 55px; }
+}
+
+/* ===== SOURCE BADGE ===== */
+[data-ui="pro"] .search-source-badge.source-piped    { background: #1b3a1e; color: #81c784; border-color: #388e3c; }
+[data-ui="pro"] .search-source-badge.source-invidious { background: #0d2137; color: #64b5f6; border-color: #1565c0; }
+[data-ui="pro"] .search-source-badge.source-youtubei  { background: #3a1f00; color: #ffb74d; border-color: #e65100; }
+
+/* ===== SEARCH RESULTS — HORIZONTAL LIST LAYOUT ===== */
+
+.page-search .video-grid {
+  grid-template-columns: 1fr;
+  gap: 0.85rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.page-search .video-card {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 1rem;
+  padding: 0.6rem;
+  border-radius: 12px;
+}
+
+.page-search .video-card .thumb-wrap {
+  flex: 0 0 320px;
+  width: 320px;
+  aspect-ratio: 16/9;
+  border-radius: 10px;
+}
+
+.page-search .video-card:hover .thumb-img { transform: scale(1.03); }
+
+.page-search .video-card .video-info,
+.page-search .video-card .video-meta,
+.page-search .video-card > div:not(.thumb-wrap) {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0.35rem 0.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.page-search .video-card .video-title,
+.page-search .video-card .title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.page-search .video-card:hover {
+  transform: translateY(-1px);
+}
+
+@media (max-width: 760px) {
+  .page-search .video-card {
+    flex-direction: column;
+    padding: 0;
+    gap: 0;
+  }
+  .page-search .video-card .thumb-wrap {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+  .page-search .video-card .video-info,
+  .page-search .video-card > div:not(.thumb-wrap) {
+    padding: 0.65rem 0.8rem 0.85rem;
+  }
+}

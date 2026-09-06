@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DYPING</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; background: #080808; overflow: hidden; }
+
+    #loading-screen {
+      position: fixed; inset: 0; background: #080808;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 18px; z-index: 100;
+    }
+    #loading-screen .thumb {
+      width: 200px; height: 200px; object-fit: cover; border-radius: 8px;
+      border: 1px solid #b0000044;
+      box-shadow: 0 0 32px #b0000066, 0 4px 24px #00000099;
+      image-rendering: pixelated;
+    }
+    #loading-screen h2 {
+      font-family: 'Courier New', monospace; font-size: 26px; letter-spacing: 6px;
+      color: #cc0000;
+      text-shadow: 0 0 16px #cc000099;
+    }
+    #loading-screen .subtitle {
+      font-family: 'Courier New', monospace; font-size: 11px;
+      color: #555; letter-spacing: 2px;
+    }
+    #loading-screen .progress-wrap {
+      width: 280px; height: 4px; background: #1a0000; border-radius: 2px; overflow: hidden;
+      border: 1px solid #330000;
+    }
+    #loading-screen .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #660000, #cc0000);
+      width: 0%; transition: width 0.3s; border-radius: 2px;
+    }
+    #loading-screen .pct {
+      font-family: 'Courier New', monospace; color: #660000; font-size: 12px;
+      letter-spacing: 2px;
+    }
+    #loading-screen .cdn-label {
+      font-family: 'Courier New', monospace; color: #2a2a2a; font-size: 10px;
+      letter-spacing: 1px;
+    }
+
+    #gameContainer {
+      width: 100%; height: 100%; display: none;
+      position: fixed; inset: 0;
+    }
+    #unity-canvas {
+      width: 100%; height: 100%;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+<div id="loading-screen">
+  <img class="thumb"
+    src="https://os-worker.unityroom.com/unityroom_production/icon/121988/icon_20241206_220321.gif?h=1733490201"
+    alt="DYPING"
+    onerror="this.style.display='none'">
+  <h2>DYPING</h2>
+  <div class="subtitle">HORROR TYPING GAME</div>
+  <div class="progress-wrap"><div class="progress-fill" id="pf"></div></div>
+  <div class="pct" id="pct">0%</div>
+  <div class="cdn-label" id="cdn-label">接続中...</div>
+</div>
+
+<div id="gameContainer">
+  <canvas id="unity-canvas"></canvas>
+</div>
+
+<script>
+(function () {
+  var CACHE_VER = "1";
+
+  var JSDELIVR_BASE = "https://cdn.jsdelivr.net/gh/kuru-bana/Games@main/Unity/dyping";
+  var GHRAW_BASE    = "https://raw.githubusercontent.com/kuru-bana/Games/main/Unity/dyping";
+
+  function v(url) { return url + "?v=" + CACHE_VER; }
+
+  var pfEl      = document.getElementById('pf');
+  var pctEl     = document.getElementById('pct');
+  var cdnLabel  = document.getElementById('cdn-label');
+  var loadingEl = document.getElementById('loading-screen');
+  var container = document.getElementById('gameContainer');
+  var canvas    = document.getElementById('unity-canvas');
+
+  var started = false;
+  function showGame() {
+    if (started) return;
+    started = true;
+    setTimeout(function () {
+      loadingEl.style.display = 'none';
+      container.style.display = 'block';
+    }, 800);
+  }
+
+  function showError(msg) {
+    loadingEl.innerHTML =
+      '<h2 style="color:#cc0000;font-family:\'Courier New\',monospace;letter-spacing:4px;">ERROR</h2>' +
+      '<p style="color:#555;font-family:\'Courier New\',monospace;font-size:12px;text-align:center;max-width:300px;">' +
+      (msg || 'jsDelivr・GitHub Raw どちらも応答なし') + '</p>';
+  }
+
+  function setProgress(p) {
+    var pct = Math.round(p * 100);
+    pfEl.style.width = pct + '%';
+    pctEl.textContent = pct + '%';
+    if (p >= 1) showGame();
+  }
+
+  function startGame(loaderBase) {
+    var config = {
+      dataUrl:            v(GHRAW_BASE    + "/webgl.data"),
+      frameworkUrl:       v(JSDELIVR_BASE + "/webgl.framework.js"),
+      codeUrl:            v(GHRAW_BASE    + "/webgl.wasm"),
+      streamingAssetsUrl: GHRAW_BASE      + "/StreamingAssets",
+      companyName:        "HeavisideCreations",
+      productName:        "DYPING",
+      productVersion:     "1.0",
+    };
+
+    cdnLabel.textContent = 'ゲームデータを読み込み中...';
+
+    createUnityInstance(canvas, config, function (progress) {
+      setProgress(progress);
+    }).then(function () {
+      showGame();
+    }).catch(function (message) {
+      showError(message);
+    });
+
+    setTimeout(showGame, 120000);
+  }
+
+  function loadLoader() {
+    var tried = [];
+    var sources = [JSDELIVR_BASE, GHRAW_BASE];
+    var idx = 0;
+
+    function tryNext() {
+      if (idx >= sources.length) {
+        showError('ローダーの読み込みに失敗しました');
+        return;
+      }
+      var base = sources[idx++];
+      var label = base.includes('jsdelivr') ? 'jsDelivr' : 'GitHub Raw';
+      cdnLabel.textContent = label + ' から読み込み中...';
+
+      var s = document.createElement('script');
+      s.src = base + '/webgl.loader.js';
+      s.onload = function () {
+        cdnLabel.textContent = label + ' 接続成功';
+        startGame(base);
+      };
+      s.onerror = function () {
+        tried.push(label);
+        tryNext();
+      };
+      document.body.appendChild(s);
+    }
+
+    tryNext();
+  }
+
+  loadLoader();
+})();
+</script>
+</body>
+</html>

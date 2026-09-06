@@ -1,0 +1,16 @@
+/* ===== PRO THEME – CHANNEL PAGE OVERRIDES ===== */
+/* Overrides only the color tokens that differ from the base (channel.css). */
+/* All shared rules live in channel.css which is loaded first.             */
+:root {
+  --ch-banner-bg:       linear-gradient(135deg, #211208 0%, #1f130a 100%);
+  --ch-banner-bg-short: linear-gradient(135deg, #2d1a10 0%, #241610 60%, #1c110a 100%);
+  --ch-tabs-bg:         rgba(26, 14, 8, 0.9);
+  --ch-surface-dark:    rgba(45, 26, 16, 0.85);
+  --ch-tab-bg:          #1a0f08;
+  --ch-verified-bg:     #1f120a;
+  --ch-text-secondary:  #a89888;
+  --ch-text-dim:        #8a7864;
+  --ch-text-hover:      #e8c9a0;
+  --ch-live:            #e8a060;
+  --ch-author-color:    #deb887;
+}

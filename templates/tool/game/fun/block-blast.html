@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Block Blast</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; background: #100800; overflow: hidden; }
+    #loading-screen {
+      position: fixed; inset: 0; background: #100800;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 20px; z-index: 100;
+    }
+    #loading-screen .thumb {
+      width: 280px; height: 158px; object-fit: cover; border-radius: 12px;
+      border: 2px solid #f5973255; box-shadow: 0 4px 24px #f5973244;
+    }
+    #loading-screen h2 {
+      font-family: 'Segoe UI', sans-serif; font-size: 22px;
+      background: linear-gradient(90deg, #fbbf24, #f97316);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    #loading-screen .progress-wrap { width: 300px; height: 6px; background: #2a1500; border-radius: 3px; overflow: hidden; }
+    #loading-screen .progress-fill { height: 100%; background: linear-gradient(90deg, #fbbf24, #f97316); width: 0%; transition: width 0.2s; border-radius: 3px; }
+    #loading-screen .pct { font-family: monospace; color: #a06020; font-size: 13px; }
+    #loading-screen .cdn-label { font-family: monospace; color: #4a2500; font-size: 11px; }
+    div#gameContainer { background: transparent !important; position: absolute; top: 0 !important; width: 100% !important; height: 100% !important; left: 0 !important; visibility: hidden; opacity: 0; }
+    div#gameContainer canvas { position: absolute; width: 100% !important; height: 100% !important; }
+  </style>
+</head>
+<body>
+<div id="loading-screen">
+  <img class="thumb" src="https://freezenova.com/lessons/img/block-blast.jpg" alt="Block Blast" onerror="this.style.display='none'">
+  <h2>🧱 Block Blast</h2>
+  <div class="progress-wrap"><div class="progress-fill" id="pf"></div></div>
+  <div class="pct" id="pct">0%</div>
+  <div class="cdn-label" id="cdn-label">CDNに接続中...</div>
+</div>
+<div id="gameContainer">
+  <canvas id="unity-canvas" data-pixel-art=""></canvas>
+</div>
+<script>
+var CDN_PROVIDERS = [
+  "https://cdn.jsdelivr.net/gh/kuru-bana/Games@main",
+  "https://raw.githubusercontent.com/kuru-bana/Games/main"
+];
+
+function loadWithFallback(subpath, onSuccess, onFail) {
+  var providers = CDN_PROVIDERS.slice(), idx = 0;
+  function tryNext() {
+    if (idx >= providers.length) { if (onFail) onFail(); return; }
+    var base = providers[idx++];
+    document.getElementById('cdn-label').textContent =
+      (base.includes('jsdelivr') ? 'jsDelivr' : 'GitHub Raw') + ' から読み込み中...';
+    var s = document.createElement('script');
+    s.src = base + subpath;
+    s.onload = function() { onSuccess(base); };
+    s.onerror = tryNext;
+    document.body.appendChild(s);
+  }
+  tryNext();
+}
+
+var canvas = document.getElementById('unity-canvas');
+var config = { streamingAssetsUrl: 'StreamingAssets' };
+
+function progressHandler(p) {
+  var pct = Math.round(p * 100);
+  document.getElementById('pf').style.width = pct + '%';
+  document.getElementById('pct').textContent = pct + '%';
+}
+
+loadWithFallback('/FreezeNova/block-blast/Build/game.loader.js',
+  function(base) {
+    var B = base + '/FreezeNova/block-blast/Build';
+    config.dataUrl      = B + '/game.data.unityweb';
+    config.frameworkUrl = B + '/game.framework.js.unityweb';
+    config.codeUrl      = B + '/game.wasm.unityweb';
+    createUnityInstance(canvas, config, progressHandler).then(function(inst) {
+      window.gameInstance = inst;
+      setTimeout(function() {
+        document.getElementById('loading-screen').style.display = 'none';
+        var gc = document.getElementById('gameContainer');
+        gc.style.visibility = 'visible';
+        gc.style.opacity = '1';
+      }, 1000);
+    }).catch(function(e) { console.error(e); });
+  },
+  function() {
+    document.getElementById('loading-screen').innerHTML =
+      '<h2 style="color:#ef4444;font-family:sans-serif;">CDNからの読み込みに失敗しました</h2>' +
+      '<p style="color:#888;font-family:sans-serif;font-size:13px;">jsDelivr・GitHub Raw どちらも応答なし</p>';
+  }
+);
+</script>
+</body>
+</html>

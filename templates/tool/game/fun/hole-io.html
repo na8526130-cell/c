@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hole.io</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; background: #0a0010; overflow: hidden; }
+    #loading-screen {
+      position: fixed; inset: 0; background: #0a0010;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 20px; z-index: 100;
+    }
+    #loading-screen .thumb {
+      width: 280px; height: 158px; object-fit: cover; border-radius: 12px;
+      border: 2px solid #8b5cf655; box-shadow: 0 4px 24px #8b5cf644;
+    }
+    #loading-screen h2 {
+      font-family: 'Segoe UI', sans-serif; font-size: 22px;
+      background: linear-gradient(90deg, #a78bfa, #7c3aed);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    #loading-screen .progress-wrap { width: 300px; height: 6px; background: #1a0a30; border-radius: 3px; overflow: hidden; }
+    #loading-screen .progress-fill { height: 100%; background: linear-gradient(90deg, #8b5cf6, #6d28d9); width: 0%; transition: width 0.3s; border-radius: 3px; }
+    #loading-screen .pct { font-family: monospace; color: #7c5cbf; font-size: 13px; }
+    #loading-screen .cdn-label { font-family: monospace; color: #2d1060; font-size: 11px; }
+    .webgl-content { width: 100%; height: 100%; }
+    #gameContainer { width: 100%; height: 100%; display: none; }
+  </style>
+</head>
+<body>
+<div id="loading-screen">
+  <img class="thumb" src="https://freezenova.com/lessons/hole.io.webp" alt="Hole.io" onerror="this.style.display='none'">
+  <h2>🕳️ Hole.io</h2>
+  <div class="progress-wrap"><div class="progress-fill" id="pf"></div></div>
+  <div class="pct" id="pct">0%</div>
+  <div class="cdn-label" id="cdn-label">CDNに接続中...</div>
+</div>
+<div class="webgl-content">
+  <div id="gameContainer"></div>
+</div>
+<script>
+var CDN_PROVIDERS = [
+  "https://cdn.jsdelivr.net/gh/kuru-bana/Games@main",
+  "https://raw.githubusercontent.com/kuru-bana/Games/main"
+];
+
+function loadWithFallback(subpath, onSuccess, onFail) {
+  var providers = CDN_PROVIDERS.slice(), idx = 0;
+  function tryNext() {
+    if (idx >= providers.length) { if (onFail) onFail(); return; }
+    var base = providers[idx++];
+    document.getElementById('cdn-label').textContent =
+      (base.includes('jsdelivr') ? 'jsDelivr' : 'GitHub Raw') + ' から読み込み中...';
+    var s = document.createElement('script');
+    s.src = base + subpath;
+    s.onload = function() { onSuccess(base); };
+    s.onerror = tryNext;
+    document.body.appendChild(s);
+  }
+  tryNext();
+}
+
+(function() {
+  var started = false;
+  function showGame() {
+    if (started) return;
+    started = true;
+    setTimeout(function() {
+      document.getElementById('loading-screen').style.display = 'none';
+      document.getElementById('gameContainer').style.display = 'block';
+    }, 1000);
+  }
+  function showError() {
+    document.getElementById('loading-screen').innerHTML =
+      '<h2 style="color:#ef4444;font-family:sans-serif;">⚠️ 読み込みに失敗しました</h2>' +
+      '<p style="color:#888;font-family:sans-serif;font-size:13px;">jsDelivr・GitHub Raw どちらも応答なし</p>';
+  }
+  function ourProgress(instance, progress) {
+    if (typeof progress === 'number') {
+      var pct = Math.round(progress * 100);
+      document.getElementById('pf').style.width = pct + '%';
+      document.getElementById('pct').textContent = pct + '%';
+      if (progress >= 1) showGame();
+    } else if (progress === 'complete') {
+      showGame();
+    }
+  }
+
+  loadWithFallback('/SOXR/hole.io/UnityLoader.js',
+    function(base) {
+      var B = base + '/SOXR/hole.io';
+      var gameConfig = {
+        companyName: "PlayJolt.com", productName: "HoleIO",
+        dataUrl: B + "/vaxo.data.unityweb",
+        asmCodeUrl: B + "/vaxoio.asm.code.unityweb",
+        asmMemoryUrl: B + "/vaxoio.asm.memory.unityweb",
+        asmFrameworkUrl: B + "/vaxoio.asm.framework.unityweb",
+        TOTAL_MEMORY: 268435456,
+        graphicsAPI: ["WebGL 2.0", "WebGL 1.0"],
+        webglContextAttributes: { preserveDrawingBuffer: false },
+        splashScreenStyle: "Dark", backgroundColor: "#231F20"
+      };
+      var blob = new Blob([JSON.stringify(gameConfig)], { type: 'application/json' });
+      UnityLoader.instantiate("gameContainer", URL.createObjectURL(blob), {
+        onProgress: ourProgress,
+        Module: { onRuntimeInitialized: function() { showGame(); } }
+      });
+      setTimeout(showGame, 60000);
+    },
+    showError
+  );
+})();
+</script>
+</body>
+</html>

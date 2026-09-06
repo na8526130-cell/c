@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="200" viewBox="0 0 320 200">
+  <defs>
+    <radialGradient id="bg" cx="30%" cy="30%" r="80%">
+      <stop offset="0%" stop-color="#3d1c0a"/>
+      <stop offset="100%" stop-color="#1a0e08"/>
+    </radialGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#d2691e" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#d2691e" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="chocBar" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7b3a10"/>
+      <stop offset="100%" stop-color="#4a1e05"/>
+    </linearGradient>
+    <linearGradient id="chocTop" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#c46a25"/>
+      <stop offset="100%" stop-color="#8b4513"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="320" height="200" fill="url(#bg)"/>
+  <ellipse cx="160" cy="100" rx="140" ry="90" fill="url(#glow)"/>
+
+  <!-- Chocolate bar body -->
+  <g transform="translate(60,55)">
+    <!-- Shadow -->
+    <rect x="5" y="7" width="200" height="100" rx="10" fill="rgba(0,0,0,0.4)"/>
+    <!-- Main bar -->
+    <rect width="200" height="100" rx="10" fill="url(#chocBar)"/>
+    <!-- Top sheen -->
+    <rect width="200" height="100" rx="10" fill="url(#chocTop)" opacity="0.55"/>
+
+    <!-- Grid lines horizontal -->
+    <line x1="0" y1="33" x2="200" y2="33" stroke="rgba(0,0,0,0.35)" stroke-width="2"/>
+    <line x1="0" y1="66" x2="200" y2="66" stroke="rgba(0,0,0,0.35)" stroke-width="2"/>
+    <!-- Grid lines vertical -->
+    <line x1="50" y1="0" x2="50" y2="100" stroke="rgba(0,0,0,0.35)" stroke-width="2"/>
+    <line x1="100" y1="0" x2="100" y2="100" stroke="rgba(0,0,0,0.35)" stroke-width="2"/>
+    <line x1="150" y1="0" x2="150" y2="100" stroke="rgba(0,0,0,0.35)" stroke-width="2"/>
+
+    <!-- Highlight -->
+    <rect x="8" y="6" width="184" height="28" rx="6" fill="rgba(255,255,255,0.07)"/>
+  </g>
+
+  <!-- Question mark -->
+  <text x="160" y="118" font-family="serif" font-size="72" font-weight="900"
+        fill="#ffd700" text-anchor="middle" opacity="0.95"
+        filter="url(#qs)">?</text>
+  <text x="162" y="120" font-family="serif" font-size="72" font-weight="900"
+        fill="#f4a460" text-anchor="middle" opacity="0.3">?</text>
+
+  <!-- Label -->
+  <text x="160" y="175" font-family="'Segoe UI',Arial,sans-serif" font-size="15" font-weight="700"
+        fill="#f4a460" text-anchor="middle" letter-spacing="3">チョコクイズ</text>
+  <text x="160" y="191" font-family="'Courier New',monospace" font-size="9"
+        fill="rgba(244,164,96,0.5)" text-anchor="middle" letter-spacing="2">CHOCOLATE QUIZ</text>
+</svg>

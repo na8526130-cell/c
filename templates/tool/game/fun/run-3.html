@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Run 3</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; background: #060c18; overflow: hidden; }
+    #loading-screen {
+      position: fixed; inset: 0; background: #060c18;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 20px; z-index: 100;
+    }
+    #loading-screen .thumb {
+      width: 280px; height: 158px; object-fit: cover; border-radius: 12px;
+      border: 2px solid #0ea5e955; box-shadow: 0 4px 24px #0ea5e944;
+    }
+    #loading-screen h2 {
+      font-family: 'Segoe UI', sans-serif; font-size: 22px;
+      background: linear-gradient(90deg, #38bdf8, #818cf8);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    #loading-screen .progress-wrap { width: 300px; height: 6px; background: #0d1b2e; border-radius: 3px; overflow: hidden; }
+    #loading-screen .progress-fill {
+      height: 100%; background: linear-gradient(90deg, #0ea5e9, #6366f1);
+      border-radius: 3px; animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100% { width: 20%; } 50% { width: 80%; } }
+    #loading-screen .pct { font-family: monospace; color: #3a7aaa; font-size: 13px; }
+    #loading-screen .cdn-label { font-family: monospace; color: #1e3a5f; font-size: 11px; }
+    #game-container { width: 100%; height: 100%; display: none; }
+    #game-container ruffle-player { width: 100%; height: 100%; display: block; }
+  </style>
+</head>
+<body>
+<div id="loading-screen">
+  <img class="thumb" src="https://freezenova.com/lessons/run3.webp" alt="Run 3" onerror="this.style.display='none'">
+  <h2>🛸 Run 3</h2>
+  <div class="progress-wrap"><div class="progress-fill"></div></div>
+  <div class="pct" id="pct">Ruffle を読み込み中...</div>
+  <div class="cdn-label" id="cdn-label">CDNに接続中...</div>
+</div>
+<div id="game-container"></div>
+<script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
+<script>
+var CDN_PROVIDERS = [
+  "https://cdn.jsdelivr.net/gh/kuru-bana/Games@main/FreezeNova",
+  "https://raw.githubusercontent.com/kuru-bana/Games/main/FreezeNova"
+];
+var idx = 0;
+
+function tryLoad() {
+  if (idx >= CDN_PROVIDERS.length) {
+    document.getElementById('pct').textContent = '読み込みに失敗しました';
+    document.getElementById('pct').style.color = '#ef4444';
+    return;
+  }
+  var base = CDN_PROVIDERS[idx++];
+  document.getElementById('cdn-label').textContent =
+    (base.includes('jsdelivr') ? 'jsDelivr' : 'GitHub Raw') + ' から読み込み中...';
+
+  var ruffle = window.RufflePlayer && window.RufflePlayer.newest();
+  if (!ruffle) { setTimeout(tryLoad, 300); return; }
+
+  var player = ruffle.createPlayer();
+  player.style.width = '100%';
+  player.style.height = '100%';
+  document.getElementById('game-container').appendChild(player);
+  player.load(base + '/run-3/run3.swf').then(function() {
+    document.getElementById('loading-screen').style.display = 'none';
+    document.getElementById('game-container').style.display = 'block';
+  }).catch(function() {
+    player.remove();
+    tryLoad();
+  });
+}
+
+if (document.readyState === 'complete') {
+  tryLoad();
+} else {
+  window.addEventListener('load', tryLoad);
+}
+</script>
+</body>
+</html>

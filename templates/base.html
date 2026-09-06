@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Choco-tube-plus{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap">
+  <link rel="stylesheet" href="/static/css/default/base.css?v={{ static_ver }}" />
+  <link rel="stylesheet" href="/static/css/default/global.css?v={{ static_ver }}" />
+  <link rel="stylesheet" href="/static/css/default/search.css?v={{ static_ver }}" />
+  <link rel="stylesheet" href="/static/css/default/channel.css?v={{ static_ver }}" />
+  <link rel="stylesheet" href="/static/css/default/watch.css?v={{ static_ver }}" />
+  <link rel="stylesheet" href="/static/css/default/library.css?v={{ static_ver }}" />
+  <link rel="stylesheet" href="/static/css/default/settings.css?v={{ static_ver }}" />
+  <link rel="stylesheet" href="/static/css/default/shorts.css?v={{ static_ver }}" />
+  <script>
+    (function() {
+      var theme = localStorage.getItem('ui-theme') || 'default';
+      if (theme === 'pro') {
+        var files = ['base','global','search','channel','watch','library','settings','shorts'];
+        var ver = '{{ static_ver }}';
+        files.forEach(function(f) {
+          var el = document.createElement('link');
+          el.rel = 'stylesheet';
+          el.href = '/static/css/pro/' + f + '.css?v=' + ver;
+          el.setAttribute('data-ui-pro', '1');
+          document.head.appendChild(el);
+        });
+        document.documentElement.setAttribute('data-ui', 'pro');
+      }
+    })();
+  </script>
+  {% block head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  <!-- Sidebar overlay -->
+  <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+  <!-- Left sidebar -->
+  <aside id="appSidebar" class="app-sidebar">
+    <div class="sidebar-header">
+      <a href="/" class="sidebar-logo">
+        <span class="logo-inv">Choco</span><span class="logo-tube">-tube-plus</span>
+      </a>
+      <button id="sidebarClose" class="sidebar-close-btn" aria-label="閉じる">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="/" class="sidebar-nav-link{% if active == 'home' %} active{% endif %}">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>ホーム</span>
+      </a>
+      <a href="/trending" class="sidebar-nav-link{% if active == 'trending' %} active{% endif %}">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+        <span>トレンド</span>
+      </a>
+      <a href="/library" class="sidebar-nav-link{% if active == 'library' %} active{% endif %}">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        <span>ライブラリ</span>
+      </a>
+      <a href="/chat" class="sidebar-nav-link{% if active == 'chat' %} active{% endif %}">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span>チャット</span>
+      </a>
+      <a href="/dl" class="sidebar-nav-link{% if active == 'dl' %} active{% endif %}">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span>ダウンロード</span>
+      </a>
+      <a href="/links" class="sidebar-nav-link{% if active == 'links' %} active{% endif %}">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        <span>リンク</span>
+      </a>
+      <a href="/tool" class="sidebar-nav-link{% if active == 'tool' %} active{% endif %}">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        <span>ツール</span>
+      </a>
+      <a href="/settings" class="sidebar-nav-link{% if active == 'settings' %} active{% endif %}">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span>設定</span>
+      </a>
+      <a href="/about" class="sidebar-nav-link{% if active == 'about' %} active{% endif %}">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        <span>概要</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <button id="uiThemeBtnSidebar" class="sidebar-theme-btn" title="UIを切り替え">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <span id="uiThemeLabel">Default</span>
+      </button>
+    </div>
+  </aside>
+
+  <header>
+    <div class="header-inner">
+      <button id="hamburgerBtn" class="hamburger-btn" aria-label="メニューを開く">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+      <a href="/" class="logo">
+        <span class="logo-inv">Choco</span><span class="logo-tube">-tube-plus</span><span class="logo-ver" id="logoVer"></span>
+      </a>
+      <div class="search-wrapper">
+        <form class="search-form" id="searchForm">
+          <input type="text" id="searchInput" class="search-input" placeholder="動画を検索..." autocomplete="off" />
+          <button type="submit" class="search-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="18" height="18"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </button>
+        </form>
+        <ul id="suggestions" class="suggestions-list" hidden></ul>
+      </div>
+      <nav class="header-nav">
+        <div class="header-shortcuts">
+          <a href="/trending" class="header-shortcut{% if active == 'trending' %} active{% endif %}" title="トレンド">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+          </a>
+          <a href="/library" class="header-shortcut{% if active == 'library' %} active{% endif %}" title="ライブラリ">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          </a>
+          <a href="/chat" class="header-shortcut{% if active == 'chat' %} active{% endif %}" title="チャット">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </a>
+          <a href="/dl" class="header-shortcut{% if active == 'dl' %} active{% endif %}" title="ダウンロード">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </a>
+          <a href="/links" class="header-shortcut{% if active == 'links' %} active{% endif %}" title="リンク">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          </a>
+          <a href="/settings" class="header-shortcut{% if active == 'settings' %} active{% endif %}" title="設定">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </a>
+        </div>
+        <button id="hardRefreshBtn" class="header-refresh-btn" title="キャッシュをクリアして再読み込み">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          <span>更新</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  {% if access_count is defined %}
+  <div id="accessCounterPanel" class="access-panel">
+    <button id="accessPanelClose" class="access-panel-close" aria-label="閉じる">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <span class="access-panel-label">TOTAL ACCESS</span>
+    <div class="access-panel-digits">
+      {% for digit in access_count | string %}
+      <div class="apd-box">
+        <div class="apd-inner">
+          <span class="apd-char">{{ digit }}</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  <script>
+    (function() {
+      var panel = document.getElementById('accessCounterPanel');
+      var closeBtn = document.getElementById('accessPanelClose');
+      if (!panel || !closeBtn) return;
+      sessionStorage.removeItem('access-panel-closed');
+      (function() {
+        var boxes = panel.querySelectorAll('.apd-box');
+        var n = boxes.length;
+        var boxW, boxH, fontSize;
+        if (n <= 4) {
+          boxW = 58; boxH = 80; fontSize = '2.7rem';
+        } else if (n <= 6) {
+          boxW = 48; boxH = 66; fontSize = '2.2rem';
+        } else if (n <= 8) {
+          boxW = 38; boxH = 54; fontSize = '1.75rem';
+        } else {
+          boxW = 30; boxH = 44; fontSize = '1.4rem';
+        }
+        boxes.forEach(function(b) {
+          b.style.width = boxW + 'px';
+          b.style.height = boxH + 'px';
+          var ch = b.querySelector('.apd-char');
+          if (ch) ch.style.fontSize = fontSize;
+        });
+      })();
+      requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+          panel.classList.add('access-panel--visible');
+        });
+      });
+      closeBtn.addEventListener('click', function() {
+        panel.classList.remove('access-panel--visible');
+        panel.classList.add('access-panel--hiding');
+        setTimeout(function() { panel.style.display = 'none'; }, 350);
+      });
+    })();
+  </script>
+  {% endif %}
+
+  {% block content %}{% endblock %}
+
+  <script src="/static/js/core/utils.js?v={{ static_ver }}"></script>
+  <script src="/static/js/core/components.js?v={{ static_ver }}"></script>
+  <script src="/static/js/core/library.js?v={{ static_ver }}"></script>
+  <script src="/static/js/core/header.js?v={{ static_ver }}"></script>
+  <script src="/static/js/pages/page-home.js?v={{ static_ver }}"></script>
+  <script src="/static/js/pages/page-trending.js?v={{ static_ver }}"></script>
+  <script src="/static/js/pages/page-search.js?v={{ static_ver }}"></script>
+  <script src="/static/js/pages/page-channel.js?v={{ static_ver }}"></script>
+  <script src="/static/js/pages/page-playlist.js?v={{ static_ver }}"></script>
+  <script src="/static/js/pages/page-mix.js?v={{ static_ver }}"></script>
+  <script src="/static/js/pages/page-hashtag.js?v={{ static_ver }}"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
+  <script src="/static/js/watch/page-watch.js?v={{ static_ver }}"></script>
+  <script src="/static/js/watch/watch-iframe.js?v={{ static_ver }}"></script>
+  <script src="/static/js/watch/watch-hq.js?v={{ static_ver }}"></script>
+  <script src="/static/js/watch/watch-modebar.js?v={{ static_ver }}"></script>
+  <script src="/static/js/watch/watch-player.js?v={{ static_ver }}"></script>
+  <script src="/static/js/watch/watch-info.js?v={{ static_ver }}"></script>
+  <script src="/static/js/watch/watch-transcript.js?v={{ static_ver }}"></script>
+  <script src="/static/js/watch/watch-playlist.js?v={{ static_ver }}"></script>
+  <script src="/static/js/watch/watch-pbset.js?v={{ static_ver }}"></script>
+  <script src="/static/js/watch/watch-controls.js?v={{ static_ver }}"></script>
+  <script src="/static/js/pages/page-library.js?v={{ static_ver }}"></script>
+  <script src="/static/js/pages/page-dl.js?v={{ static_ver }}"></script>
+  <script src="/static/js/pages/page-settings.js?v={{ static_ver }}"></script>
+  <script src="/static/js/core/background.js?v={{ static_ver }}"></script>
+  <script src="/static/js/pages/page-shorts.js?v={{ static_ver }}"></script>
+  {% block scripts %}{% endblock %}
+  <script>
+    initHeaderSearch();
+
+    fetch('/version').then(r=>r.json()).then(d=>{
+      const el = document.getElementById('logoVer');
+      if(el && d.ver) el.textContent = ' v' + d.ver;
+    }).catch(()=>{});
+
+    (function() {
+      const btn = document.getElementById('hardRefreshBtn');
+      if (!btn) return;
+      btn.addEventListener('click', async function() {
+        btn.classList.add('spinning');
+        try {
+          if ('caches' in window) {
+            const keys = await caches.keys();
+            await Promise.all(keys.map(k => caches.delete(k)));
+          }
+          sessionStorage.clear();
+        } catch (e) {}
+        setTimeout(() => { location.reload(); }, 300);
+      });
+    })();
+
+    (function() {
+      const hamburger = document.getElementById('hamburgerBtn');
+      const sidebar = document.getElementById('appSidebar');
+      const overlay = document.getElementById('sidebarOverlay');
+      const closeBtn = document.getElementById('sidebarClose');
+
+      function openSidebar() {
+        sidebar.classList.add('open');
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeSidebar() {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+
+      if (hamburger) hamburger.addEventListener('click', openSidebar);
+      if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
+      if (overlay) overlay.addEventListener('click', closeSidebar);
+
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeSidebar();
+      });
+    })();
+
+    (function() {
+      const btn = document.getElementById('uiThemeBtnSidebar');
+      const label = document.getElementById('uiThemeLabel');
+      if (!btn || !label) return;
+
+      const PRO_FILES = ['base','global','search','channel','watch','library','settings','shorts'];
+      const VER = '{{ static_ver }}';
+      const BG = { pro: '#1a0e08', default: '#050914' };
+
+      const current = localStorage.getItem('ui-theme') || 'default';
+      label.textContent = current === 'pro' ? 'Pro' : 'Default';
+      if (current === 'pro') btn.classList.add('ui-btn-pro');
+
+      function applyTheme(theme) {
+        btn.disabled = true;
+
+        const overlay = document.createElement('div');
+        overlay.style.cssText = [
+          'position:fixed', 'inset:0', 'z-index:99999',
+          'opacity:0', 'pointer-events:all',
+          'transition:opacity 0.22s ease',
+          'background:' + (BG[theme] || BG.default)
+        ].join(';');
+        document.body.appendChild(overlay);
+
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          overlay.style.opacity = '1';
+        }));
+
+        setTimeout(function() {
+          if (theme === 'pro') {
+            PRO_FILES.forEach(function(f) {
+              var el = document.createElement('link');
+              el.rel = 'stylesheet';
+              el.href = '/static/css/pro/' + f + '.css?v=' + VER;
+              el.setAttribute('data-ui-pro', '1');
+              document.head.appendChild(el);
+            });
+            document.documentElement.setAttribute('data-ui', 'pro');
+          } else {
+            document.querySelectorAll('link[data-ui-pro]').forEach(function(el) { el.remove(); });
+            document.documentElement.removeAttribute('data-ui');
+          }
+
+          label.textContent = theme === 'pro' ? 'Pro' : 'Default';
+          if (theme === 'pro') btn.classList.add('ui-btn-pro');
+          else btn.classList.remove('ui-btn-pro');
+
+          setTimeout(function() {
+            overlay.style.transition = 'opacity 0.32s ease';
+            overlay.style.opacity = '0';
+            setTimeout(function() {
+              overlay.remove();
+              btn.disabled = false;
+            }, 340);
+          }, 60);
+        }, 240);
+      }
+
+      btn.addEventListener('click', function() {
+        const next = (localStorage.getItem('ui-theme') || 'default') === 'default' ? 'pro' : 'default';
+        localStorage.setItem('ui-theme', next);
+        applyTheme(next);
+      });
+    })();
+  </script>
+</body>
+</html>

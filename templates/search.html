@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+{% block title %}検索 — Choco-tube-plus{% endblock %}
+{% block body_class %}page-search{% endblock %}
+{% block head %}
+<style>
+  #cse-captcha-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0,0,0,0.6);
+    align-items: center;
+    justify-content: center;
+  }
+  #cse-captcha-overlay.active {
+    display: flex;
+  }
+  #cse-captcha-box {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.35);
+    padding: 20px 20px 16px;
+    max-width: 520px;
+    width: 94vw;
+    position: relative;
+  }
+  #cse-captcha-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    font-family: 'Roboto', Arial, sans-serif;
+  }
+  #cse-captcha-header svg {
+    flex-shrink: 0;
+    color: #f0a500;
+  }
+  #cse-captcha-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #222;
+    line-height: 1.4;
+  }
+  #cse-captcha-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: #f0f0f0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #555;
+    font-size: 16px;
+    line-height: 1;
+  }
+  #cse-captcha-close:hover { background: #e0e0e0; }
+  #hidden-cse-container {
+    min-height: 60px;
+  }
+</style>
+<script>
+  window._cseCx = "c04ec9d20c4264b0d";
+  window._cseReady = false;
+  window._cseResultCallback = null;
+  window._cseCaptchaTimer = null;
+  window.__gcse = {
+    parsetags: 'explicit',
+    initializationCallback: function() {
+      google.search.cse.element.render({
+        div: 'hidden-cse-container',
+        tag: 'searchresults-only',
+        gname: 'chocoCse'
+      });
+      window._cseReady = true;
+    },
+    searchCallbacks: {
+      web: {
+        ready: function(name, q, promos, results) {
+          clearTimeout(window._cseCaptchaTimer);
+          window._cseHideCaptchaOverlay();
+          if (typeof window._cseResultCallback === 'function') {
+            var cb = window._cseResultCallback;
+            window._cseResultCallback = null;
+            cb(results || []);
+          }
+          return true;
+        }
+      }
+    }
+  };
+
+  window._cseShowCaptchaOverlay = function() {
+    var overlay = document.getElementById('cse-captcha-overlay');
+    if (overlay) overlay.classList.add('active');
+  };
+
+  window._cseHideCaptchaOverlay = function() {
+    var overlay = document.getElementById('cse-captcha-overlay');
+    if (overlay) overlay.classList.remove('active');
+    window._cseCaptchaTimer = null;
+  };
+</script>
+{% endblock %}
+{% block content %}
+
+<div id="cse-captcha-overlay">
+  <div id="cse-captcha-box">
+    <div id="cse-captcha-header">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <span id="cse-captcha-title">ロボット確認が必要です。以下のチェックを完了してください。完了後、自動で検索が続きます。</span>
+    </div>
+    <div id="hidden-cse-container"></div>
+    <button id="cse-captcha-close" title="閉じる" onclick="window._cseHideCaptchaOverlay()">✕</button>
+  </div>
+</div>
+
+<div class="filter-bar" id="filterBar" data-search-source="invidious">
+    <div class="filter-bar-inner">
+
+      <div class="filter-group" data-source="invidious">
+        <label class="filter-label">並び順</label>
+        <select id="sortSelect" class="filter-select">
+          <option value="relevance">関連度順</option>
+          <option value="rating">評価順</option>
+          <option value="upload_date">投稿日順</option>
+          <option value="view_count">再生回数順</option>
+        </select>
+      </div>
+
+      <div class="filter-group" data-source="invidious">
+        <label class="filter-label">投稿日</label>
+        <select id="dateSelect" class="filter-select">
+          <option value="">すべて</option>
+          <option value="hour">1時間以内</option>
+          <option value="today">今日</option>
+          <option value="week">今週</option>
+          <option value="month">今月</option>
+          <option value="year">今年</option>
+        </select>
+      </div>
+
+      <div class="filter-group" data-source="invidious">
+        <label class="filter-label">動画長</label>
+        <select id="durationSelect" class="filter-select">
+          <option value="">すべて</option>
+          <option value="short">短い（4分未満）</option>
+          <option value="medium">普通（4〜20分）</option>
+          <option value="long">長い（20分以上）</option>
+        </select>
+      </div>
+
+      <div class="filter-group" data-source="invidious">
+        <label class="filter-label">種別</label>
+        <select id="typeSelect" class="filter-select">
+          <option value="all">すべて</option>
+          <option value="video">動画</option>
+          <option value="channel">チャンネル</option>
+          <option value="playlist">再生リスト</option>
+          <option value="movie">映画</option>
+          <option value="show">番組</option>
+        </select>
+      </div>
+
+      <div class="filter-group" data-source="invidious">
+        <label class="filter-label">機能</label>
+        <div class="features-wrap">
+          <button type="button" class="features-toggle" id="featuresToggle">
+            <span id="featuresLabel">すべて</span>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="features-dropdown" id="featuresDropdown" hidden>
+            <label class="feature-item"><input type="checkbox" value="hd" /> HD</label>
+            <label class="feature-item"><input type="checkbox" value="4k" /> 4K</label>
+            <label class="feature-item"><input type="checkbox" value="live" /> ライブ配信</label>
+            <label class="feature-item"><input type="checkbox" value="subtitles" /> 字幕あり</label>
+            <label class="feature-item"><input type="checkbox" value="hdr" /> HDR</label>
+            <label class="feature-item"><input type="checkbox" value="360" /> 360度</label>
+            <label class="feature-item"><input type="checkbox" value="vr180" /> VR180</label>
+            <label class="feature-item"><input type="checkbox" value="3d" /> 3D</label>
+            <label class="feature-item"><input type="checkbox" value="creative_commons" /> CC</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-group" data-source="invidious">
+        <label class="filter-label">地域</label>
+        <select id="regionSelect" class="filter-select region-select-sm"></select>
+      </div>
+
+      <!-- Piped-specific filters -->
+      <div class="filter-group" data-source="piped">
+        <label class="filter-label">種別</label>
+        <select id="pipedFilterSelect" class="filter-select">
+          <option value="all">すべて</option>
+          <option value="videos">動画</option>
+          <option value="channels">チャンネル</option>
+          <option value="playlists">再生リスト</option>
+          <option value="music_songs">音楽（曲）</option>
+          <option value="music_videos">音楽（動画）</option>
+          <option value="music_albums">音楽（アルバム）</option>
+          <option value="music_playlists">音楽（プレイリスト）</option>
+        </select>
+      </div>
+
+      <!-- YouTubei.js-specific filters -->
+      <div class="filter-group" data-source="youtubei">
+        <label class="filter-label">種別</label>
+        <select id="yjFilterSelect" class="filter-select">
+          <option value="all">すべて</option>
+          <option value="videos">動画</option>
+          <option value="shorts">ショート</option>
+          <option value="channels">チャンネル</option>
+          <option value="playlists">再生リスト</option>
+        </select>
+      </div>
+
+    </div>
+  </div>
+
+  <main>
+    <div id="shortsSection" hidden></div>
+    <div class="result-header" id="resultHeader" hidden>
+      <span id="resultInfo"></span>
+      <span id="searchSourceBadge" class="search-source-badge" hidden></span>
+    </div>
+    <div id="resultGrid" class="video-grid"></div>
+    <div class="pagination" id="pagination" hidden>
+      <button id="prevBtn" class="page-btn" disabled>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="15 18 9 12 15 6"/></svg>
+        前のページ
+      </button>
+      <span id="pageInfo" class="page-info"></span>
+      <button id="nextBtn" class="page-btn">
+        次のページ
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+  </main>
+{% endblock %}
+{% block scripts %}
+<script async src="https://cse.google.com/cse.js?cx=c04ec9d20c4264b0d"></script>
+{% endblock %}

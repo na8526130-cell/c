@@ -1,0 +1,112 @@
+/* ===== PRO THEME – settings.css OVERRIDES ONLY =====
+   All layout rules live in settings.css (loaded first).
+   This file overrides only what differs in the pro theme. */
+
+/* ===== SETTINGS PAGE ===== */
+
+body.page-settings .settings-header {
+  margin-bottom: 2rem;
+}
+
+/* ===== SECTION ===== */
+
+body.page-settings .settings-section-title {
+  background: rgba(160, 82, 45, 0.06);
+}
+
+/* ===== ROW ===== */
+
+body.page-settings .settings-row:hover {
+  background: rgba(160, 82, 45, 0.04);
+}
+
+/* ===== SELECT ===== */
+
+/* ===== TOGGLE ===== */
+
+/* ===== DANGER BUTTON ===== */
+
+body.page-settings .settings-danger-btn {
+  color: #d49060;
+}
+
+/* ===== TOAST ===== */
+
+/* ===== VOLUME SLIDER ===== */
+
+@media (max-width: 600px) {
+  body.page-settings .settings-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.8rem;
+  }
+  body.page-settings .settings-select, body.page-settings .settings-danger-btn {
+    align-self: flex-end;
+  }
+  body.page-settings .settings-toggle {
+    align-self: flex-end;
+  }
+  body.page-settings .settings-volume-wrap {
+    align-self: flex-end;
+  }
+}
+
+body.page-channel .home-featured-iframe-box {
+  background: #150b06;
+}
+
+body.page-channel .home-vc-thumb-wrap {
+  background: #241612;
+}
+
+body.page-channel .home-ch-icon {
+  background: #3a2418;
+}
+
+body.page-channel .home-ch-icon-placeholder {
+  background: #3a2418;
+}
+
+body.page-channel .home-post-avatar {
+  background: #3a2418;
+}
+
+body.page-channel .home-post-avatar-ph {
+  background: #3a2418;
+}
+
+@media (max-width: 768px) {
+  body.page-channel .home-featured {
+    padding: 0 0.9rem;
+  }
+  body.page-channel .home-featured-player-wrap {
+    max-width: 100%;
+  }
+  body.page-channel .home-shelf-header {
+    padding: 0 0.9rem;
+  }
+  body.page-channel .home-shelf-row {
+    padding: 0 0.9rem 10px;
+  }
+  body.page-channel .home-video-card {
+    width: 170px;
+  }
+  body.page-channel .home-vc-thumb-wrap {
+    width: 170px;
+    height: 96px;
+  }
+  body.page-channel .home-vc-thumb-portrait {
+    width: 100px;
+    height: 178px;
+  }
+  body.page-channel .home-shorts-card {
+    width: 110px;
+  }
+  body.page-channel .home-skeleton {
+    padding: 0 0.9rem;
+  }
+}
+
+body.page-channel .home-vc-playlist-placeholder {
+  background: #241612;
+}

@@ -1,0 +1,690 @@
+{% extends "base.html" %}
+{% block title %}視聴中 - Choco-tube-plus{% endblock %}
+{% block body_class %}page-watch{% endblock %}
+{% block content %}
+<main class="watch-main" id="watchMain">
+    <div class="watch-layout">
+      <!-- Left: player + info -->
+      <div class="watch-left">
+        <!-- Player -->
+        <div class="player-wrap" id="playerWrap">
+          <div class="player-skeleton" id="playerSkeleton"></div>
+          <video id="videoPlayer" class="video-player" preload="metadata" hidden></video>
+          <audio id="hqAudio" hidden></audio>
+          <iframe id="nocookiePlayer" class="video-player nocookie-player" hidden allowfullscreen allow="autoplay; encrypted-media; picture-in-picture" src="about:blank"></iframe>
+          <iframe id="eduPlayer" class="video-player nocookie-player" hidden allowfullscreen allow="autoplay; encrypted-media; picture-in-picture" src="about:blank"></iframe>
+
+          <!-- Piped proxy confirm overlay -->
+          <div class="piped-confirm-overlay" id="pipedConfirmOverlay" hidden>
+            <div class="piped-confirm-inner">
+              <div class="piped-confirm-title">Proxy再生しますか？</div>
+              <div class="piped-confirm-desc">Pipedサーバーを経由してプロキシ再生します（1日2回まで）。<br>直接再生する場合は「Direct」を選択してください。</div>
+              <div class="piped-confirm-btns">
+                <button class="piped-confirm-btn piped-confirm-yes" id="pipedYesBtn">はい（Proxy）</button>
+                <button class="piped-confirm-btn piped-confirm-no" id="pipedNoBtn">Direct再生</button>
+              </div>
+              <div class="piped-confirm-limit-note" hidden>今日のProxy上限（2回）に達しました</div>
+            </div>
+          </div>
+
+          <!-- Center play overlay -->
+          <div class="vctrls-center-play" id="vcCenterPlay">
+            <div class="vctrls-center-icon" id="vcCenterIcon"></div>
+          </div>
+
+          <!-- Custom controls overlay -->
+          <div class="vctrls" id="vctrls">
+            <div class="vctrls-gradient">
+              <div class="vctrls-progress-wrap" id="vctrlsProgressWrap">
+                <div class="vctrls-seek-track">
+                  <div class="vctrls-seek-buf" id="vcBuf"></div>
+                  <input type="range" class="vctrls-seek" id="vcSeek" min="0" max="1000" step="1" value="0">
+                </div>
+              </div>
+              <div class="vctrls-bar">
+                <div class="vctrls-left">
+                  <button class="vctrls-btn" id="vcPlay" title="再生/一時停止 (Space)"></button>
+                  <button class="vctrls-btn vctrls-btn-skip" id="vcSkipBack" title="10秒戻る (←)">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.54"/><text x="12" y="15" font-size="7" text-anchor="middle" fill="currentColor" stroke="none" font-family="sans-serif" font-weight="700">10</text></svg>
+                  </button>
+                  <button class="vctrls-btn vctrls-btn-skip" id="vcSkipFwd" title="10秒進む (→)">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.49-3.54"/><text x="12" y="15" font-size="7" text-anchor="middle" fill="currentColor" stroke="none" font-family="sans-serif" font-weight="700">10</text></svg>
+                  </button>
+                  <div class="vctrls-vol-wrap">
+                    <button class="vctrls-btn" id="vcMute" title="ミュート (M)"></button>
+                    <div class="vctrls-vol-slider-wrap">
+                      <input type="range" class="vctrls-vol-slider" id="vcVol" min="0" max="1" step="0.02" value="1">
+                    </div>
+                  </div>
+                  <span class="vctrls-time" id="vcTime">0:00 / 0:00</span>
+                </div>
+                <div class="vctrls-right">
+                  <!-- Quality (stream mode) -->
+                  <div class="vctrls-dd-wrap" id="vcQualWrap">
+                    <button class="vctrls-btn vctrls-dd-btn" id="vcQualBtn" title="画質">画質</button>
+                    <div class="vctrls-dd-panel" id="vcQualPanel">
+                      <div class="vctrls-dd-label">画質</div>
+                      <div class="vctrls-dd-options" id="vcQualOpts">
+                        <span class="vctrls-dd-loading">読み込み中...</span>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Video quality (HQ mode) -->
+                  <div class="vctrls-dd-wrap" id="vcHQVidWrap" hidden>
+                    <button class="vctrls-btn vctrls-dd-btn" id="vcHQVidBtn" title="映像品質">映像</button>
+                    <div class="vctrls-dd-panel" id="vcHQVidPanel">
+                      <div class="vctrls-dd-label">映像品質</div>
+                      <div class="vctrls-dd-options" id="vcHQVidOpts"></div>
+                    </div>
+                  </div>
+                  <!-- Audio quality (HQ mode) -->
+                  <div class="vctrls-dd-wrap" id="vcHQAudWrap" hidden>
+                    <button class="vctrls-btn vctrls-dd-btn" id="vcHQAudBtn" title="音声品質">音声</button>
+                    <div class="vctrls-dd-panel" id="vcHQAudPanel">
+                      <div class="vctrls-dd-label">音声品質</div>
+                      <div class="vctrls-dd-options" id="vcHQAudOpts"></div>
+                    </div>
+                  </div>
+                  <!-- Speed -->
+                  <div class="vctrls-dd-wrap" id="vcSpeedWrap">
+                    <button class="vctrls-btn vctrls-dd-btn vctrls-speed-btn" id="vcSpeedBtn" title="再生速度 (&lt; / &gt;)">1x</button>
+                    <div class="vctrls-dd-panel" id="vcSpeedPanel">
+                      <div class="vctrls-dd-label">再生速度</div>
+                      <div class="vctrls-dd-options">
+                        <button class="vctrls-dd-opt" data-speed="0.25">0.25x</button>
+                        <button class="vctrls-dd-opt" data-speed="0.5">0.5x</button>
+                        <button class="vctrls-dd-opt" data-speed="0.75">0.75x</button>
+                        <button class="vctrls-dd-opt active" data-speed="1">1x</button>
+                        <button class="vctrls-dd-opt" data-speed="1.25">1.25x</button>
+                        <button class="vctrls-dd-opt" data-speed="1.5">1.5x</button>
+                        <button class="vctrls-dd-opt" data-speed="1.75">1.75x</button>
+                        <button class="vctrls-dd-opt" data-speed="2">2x</button>
+                        <button class="vctrls-dd-opt" data-speed="3">3x</button>
+                      </div>
+                    </div>
+                  </div>
+                  <button class="vctrls-btn vctrls-kb-btn" id="vcKbBtn" title="キーボードショートカット (?)">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M6 12h.01M10 12h.01M14 12h.01M18 12h.01M8 16h8"/></svg>
+                  </button>
+                  <button class="vctrls-btn" id="vcFs" title="フルスクリーン (F)"></button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="player-error" id="playerError" hidden>
+            <div class="player-error-icon">⚠️</div>
+            <p id="playerErrorMsg">動画を再生できませんでした。</p>
+            <button class="reload-btn" id="reloadBtn" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="16" height="16"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.54"/></svg>
+              再読み込み
+            </button>
+          </div>
+        </div>
+
+        <!-- Player controls panel -->
+        <div class="player-controls" id="playerControls">
+
+          <!-- Row 1: mode + speed + actions -->
+          <div class="pc-row pc-main-row">
+            <div class="pc-group">
+              <div class="pc-stream-group">
+                <button class="pc-mode-btn active" id="modeStream">ストリーム</button>
+                <div class="pc-stream-src-wrap" id="streamSrcWrap">
+                  <button class="pc-stream-src-btn" id="streamSrcBtn" title="ストリーム取得元を選択">
+                    <span id="streamSrcLabel">並列</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="10" height="10"><polyline points="6 9 12 15 18 9"/></svg>
+                  </button>
+                  <div class="pc-stream-src-panel" id="streamSrcPanel" hidden>
+                    <button class="pc-stream-src-item" data-src="auto">並列</button>
+                    <button class="pc-stream-src-item" data-src="invidious">Invidious</button>
+                    <button class="pc-stream-src-item" data-src="rapidapi">RapidAPI</button>
+                    <button class="pc-stream-src-item" data-src="zernio">Zernio</button>
+                    <button class="pc-stream-src-item" data-src="sia">Sia</button>
+                  </div>
+                </div>
+              </div>
+              <button class="pc-mode-btn" id="modeHQ" title="高画質・高音質モード（映像+音声を個別選択）">高画質・高音質</button>
+              <button class="pc-mode-btn" id="modeNocookie">nocookie</button>
+              <button class="pc-mode-btn" id="modeEdu">edu</button>
+              <button class="pc-mode-btn" id="modePiped" title="Piped APIからストリームを取得して再生（音付き360p）">Piped</button>
+            </div>
+
+            <div class="pc-divider"></div>
+
+            <div class="pc-group pc-actions">
+              <button class="pc-icon-btn" id="reloadAllBtn">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="13" height="13"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.54"/></svg>
+                再読み込み
+              </button>
+              <button class="pc-icon-btn" id="streamAltBtn" hidden>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="13" height="13"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+                別ストリーム
+              </button>
+              <div class="pc-tool-wrap" id="pcToolWrap">
+                <button class="pc-icon-btn" id="pcToolBtn" title="ショートカット一覧">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="13" height="13" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                  ツール
+                </button>
+                <div class="pc-tool-panel" id="pcToolPanel" hidden role="menu"></div>
+              </div>
+            </div>
+
+            <span class="pc-instance-label" id="streamInstanceLabel"></span>
+            <span class="pc-alt-status" id="streamAltStatus"></span>
+          </div>
+
+          <!-- Row 2: quality / HQ selectors -->
+          <div class="pc-row pc-quality-row" id="qualityBar">
+            <span class="pc-label">画質</span>
+            <div class="quality-btns" id="qualityBtns">
+              <span class="quality-loading" id="qualityLoading">読み込み中...</span>
+            </div>
+          </div>
+
+          <!-- Audio track selector (stream audio-only mode) -->
+          <div class="pc-row pc-quality-row" id="audioTrackBar" hidden>
+            <span class="pc-label">音声</span>
+            <div class="quality-btns" id="audioTrackBtns"></div>
+          </div>
+
+          <!-- Video track selector (stream video-only mode) -->
+          <div class="pc-row pc-quality-row" id="videoTrackBar" hidden>
+            <span class="pc-label">画質</span>
+            <div class="quality-btns" id="videoTrackBtns"></div>
+          </div>
+
+          <!-- Zernio stream bar -->
+          <div class="pc-row pc-quality-row" id="zernioBar" hidden>
+            <span class="pc-label">Zernio</span>
+            <div class="quality-btns" id="zernioBtns">
+              <button class="quality-btn" id="zernioNormalBtn">通常</button>
+              <button class="quality-btn" id="zernioVideoBtn">映像のみ</button>
+            </div>
+            <span class="pc-alt-status" id="zernioStatus"></span>
+          </div>
+          <!-- Zernio quality bar (video-only) -->
+          <div class="pc-row pc-quality-row" id="zernioQualBar" hidden>
+            <span class="pc-label">画質</span>
+            <div class="quality-btns" id="zernioQualBtns">
+              <button class="quality-btn" data-fid="8">144p</button>
+              <button class="quality-btn" data-fid="1">240p</button>
+              <button class="quality-btn" data-fid="3">480p</button>
+              <button class="quality-btn" data-fid="4">720p</button>
+              <button class="quality-btn" data-fid="5">1080p H.264</button>
+              <button class="quality-btn" data-fid="6">1080p AV1</button>
+              <button class="quality-btn" data-fid="7">1440p AV1</button>
+            </div>
+          </div>
+
+          <div class="pc-row pc-quality-row" id="hqBar" hidden>
+            <div class="pc-group">
+              <label class="pc-label" for="hqVideoSelect">映像</label>
+              <select class="pc-select pc-select-wide" id="hqVideoSelect"></select>
+            </div>
+            <div class="pc-group">
+              <label class="pc-label" for="hqAudioSelect">音声</label>
+              <select class="pc-select" id="hqAudioSelect"></select>
+            </div>
+            <span class="hq-status" id="hqStatus"></span>
+            <span class="pc-instance-label" id="hqInstanceLabel"></span>
+          </div>
+
+          <div class="pc-row pc-quality-row" id="eduBar" hidden>
+            <span class="pc-label">パラメータ</span>
+            <div class="pc-group">
+              <select class="pc-select pc-select-wide" id="eduParamSelect">
+                <option value="" disabled selected>読み込み中...</option>
+              </select>
+            </div>
+            <span class="pc-alt-status" id="eduStatus"></span>
+          </div>
+
+          <!-- Piped stream bar -->
+          <div class="pc-row pc-quality-row" id="pipedBar" hidden>
+            <span class="pc-label">Piped</span>
+            <span class="pc-alt-status" id="pipedStatus" hidden></span>
+          </div>
+
+        </div>
+
+        <!-- 再生設定アコーディオン -->
+        <div class="playback-info-box" id="playbackInfoBox">
+          <button class="playback-info-header" id="playbackInfoHeader" type="button" aria-expanded="true">
+            <span class="playback-info-title">動画再生について</span>
+            <span class="playback-info-toggle" id="playbackInfoToggle">－</span>
+          </button>
+          <div class="playback-info-body" id="playbackInfoBody">
+
+            <!-- 再生区間 (1行横並び) -->
+            <div class="clip-row">
+              <div class="clip-field">
+                <label class="clip-field-label" for="clipStartInput">開始位置</label>
+                <input class="clip-field-input" type="text" id="clipStartInput" placeholder="例 1:30 または 90">
+                <span class="clip-range-error" id="clipStartError" hidden>形式: 1:30 または 90</span>
+              </div>
+              <span class="clip-plus">＋</span>
+              <div class="clip-field">
+                <label class="clip-field-label" for="clipEndInput">終了位置</label>
+                <input class="clip-field-input" type="text" id="clipEndInput" placeholder="例 3:00 または 180">
+                <span class="clip-range-error" id="clipEndError" hidden>形式: 3:00 または 180</span>
+              </div>
+              <div class="clip-row-actions">
+                <button class="clip-apply-btn" id="clipApplyBtn" type="button">適用</button>
+                <button class="clip-clear-btn" id="clipClearBtn" type="button" hidden>クリア</button>
+              </div>
+            </div>
+            <span class="clip-active-label" id="clipActiveLabel" hidden></span>
+
+            <!-- トグル (1行横並び) -->
+            <div class="pb-toggles-row">
+              <label class="switch-label-row" id="pbLoopRow">
+                <button type="button" role="switch" class="switch-btn" id="pbLoopToggle" aria-checked="false" data-state="unchecked">
+                  <span class="switch-thumb" data-state="unchecked"></span>
+                </button>
+                <span class="pb-toggle-label">ループ</span>
+              </label>
+              <label class="switch-label-row">
+                <button type="button" role="switch" class="switch-btn" id="pbAutoplayToggle" aria-checked="true" data-state="checked">
+                  <span class="switch-thumb" data-state="checked"></span>
+                </button>
+                <span class="pb-toggle-label">▶ 自動再生</span>
+              </label>
+              <label class="switch-label-row">
+                <button type="button" role="switch" class="switch-btn" id="pbSavePositionToggle" aria-checked="false" data-state="unchecked">
+                  <span class="switch-thumb" data-state="unchecked"></span>
+                </button>
+                <span class="pb-toggle-label">📍 再生位置保存</span>
+              </label>
+              <label class="switch-label-row" id="pbAutoNextRow">
+                <button type="button" role="switch" class="switch-btn" id="pbAutoNextToggle" aria-checked="true" data-state="checked">
+                  <span class="switch-thumb" data-state="checked"></span>
+                </button>
+                <span class="pb-toggle-label">⏭ 次の動画へ自動移動</span>
+              </label>
+            </div>
+            <p class="pb-hint">位置保存はストリームモードのみ有効。ループON時は自動送り無効。</p>
+
+          </div>
+        </div>
+
+        <!-- Video info skeleton -->
+        <div class="video-info-skeleton" id="infoSkeleton">
+          <div class="sk-line sk-title"></div>
+          <div class="sk-line sk-title-short"></div>
+          <div class="sk-line sk-meta"></div>
+          <div class="sk-channel-row">
+            <div class="sk-avatar"></div>
+            <div class="sk-line sk-channel-name"></div>
+          </div>
+          <div class="sk-desc-block">
+            <div class="sk-line sk-desc-line"></div>
+            <div class="sk-line sk-desc-line"></div>
+            <div class="sk-line sk-desc-line sk-desc-short"></div>
+          </div>
+        </div>
+
+        <!-- Video info -->
+        <div class="video-info" id="videoInfo" hidden>
+          <h1 class="watch-title" id="watchTitle"></h1>
+          <div class="watch-meta" id="watchMeta"></div>
+          <span class="info-source-tag" id="infoSourceTag" hidden></span>
+
+          <div class="channel-row" id="channelRow">
+            <a class="channel-link" id="channelLink" href="#">
+              <img class="channel-avatar" id="channelAvatar" src="" alt="" hidden />
+              <div class="channel-avatar-placeholder" id="channelAvatarPlaceholder"></div>
+              <div class="channel-text">
+                <div class="channel-name" id="channelName"></div>
+                <div class="channel-subs" id="channelSubs"></div>
+              </div>
+            </a>
+            <button class="sub-btn" id="watchSubBtn" hidden></button>
+            <div class="watch-pl-wrap" id="watchPlWrap" hidden>
+              <button class="watch-pl-btn" id="watchPlBtn" title="プレイリストに追加"></button>
+              <div class="watch-pl-popup" id="watchPlPopup" hidden></div>
+            </div>
+            <button class="watch-fav-btn" id="watchFavBtn" title="お気に入りに追加" hidden>
+              <svg class="fav-icon-outline" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="19" height="19"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              <svg class="fav-icon-filled" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" width="19" height="19" hidden><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
+            <div class="share-wrap" id="watchShareWrap">
+              <button class="watch-share-btn" id="watchShareBtn" title="共有" hidden>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="19" height="19"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+              </button>
+              <div class="share-panel" id="watchSharePanel" hidden role="menu">
+                <button class="share-panel-item" data-action="copy-id">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  動画IDをコピー
+                </button>
+                <button class="share-panel-item" data-action="copy-yt">
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1C4.5 20.4 12 20.4 12 20.4s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.8 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>
+                  YouTube URLをコピー
+                </button>
+                <button class="share-panel-item" data-action="copy-app">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                  このURLをコピー
+                </button>
+                <button class="share-panel-item" data-action="native" id="watchShareNative">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                  共有...
+                </button>
+              </div>
+            </div>
+            <button class="watch-dl-btn" id="watchDlBtn" title="ダウンロード" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="19" height="19"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </button>
+            <a class="yt-link-btn" id="ytLink" href="#" target="_blank" rel="noopener noreferrer">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1C4.5 20.4 12 20.4 12 20.4s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.8 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>
+              YouTubeで開く
+            </a>
+          </div>
+
+          <div class="description-wrap" id="descriptionWrap">
+            <div class="description-text" id="descriptionText"></div>
+            <button class="desc-toggle" id="descToggle" hidden>もっと見る</button>
+          </div>
+        </div>
+
+        <!-- Transcript section -->
+        <div class="transcript-section" id="transcriptSection" hidden>
+          <div class="transcript-header" id="transcriptHeader">
+            <h3 class="transcript-title">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              字幕・トランスクリプト
+            </h3>
+            <button class="transcript-toggle-btn" id="transcriptToggleBtn" aria-expanded="false">
+              <svg class="transcript-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+          </div>
+          <div class="transcript-body" id="transcriptBody" hidden>
+            <div class="transcript-langs" id="transcriptLangs"></div>
+            <div class="transcript-content" id="transcriptContent"></div>
+          </div>
+        </div>
+
+        <!-- Comments section -->
+        <div class="comments-section" id="commentsSection">
+          <div class="comments-header">
+            <h3 class="comments-title">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              コメント
+              <span class="comments-count" id="commentCount"></span>
+            </h3>
+            <div class="comments-sort">
+              <button class="sort-btn active" data-sort="top">話題順</button>
+              <button class="sort-btn" data-sort="new">新しい順</button>
+            </div>
+          </div>
+          <div id="commentsList" class="comments-list"></div>
+          <div class="load-more-wrap" id="loadMoreWrap" hidden>
+            <button id="loadMoreBtn" class="load-more-btn">もっと読む</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Floating sidebar restore button (narrow / hidden state) -->
+      <button class="sidebar-fab" id="sidebarFab" hidden title="サイドバーを表示">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="15" height="15"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+      </button>
+
+      <!-- Right: playlist panel + related videos / chat -->
+      <aside class="watch-right" id="watchRight">
+        <div id="playlistPanel" hidden></div>
+        <div class="sidebar-toggle-header">
+          <div class="related-title" id="relatedTitle">関連動画</div>
+          <div class="sidebar-header-btns">
+            <button class="sidebar-narrow-toggle-btn" id="sidebarNarrowToggleBtn"></button>
+            <button class="sidebar-chat-toggle-btn" id="chatToggleBtn" title="チャットに切り替える">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              チャット
+            </button>
+          </div>
+        </div>
+        <!-- Playback settings panel -->
+        <div class="pbset-trigger-wrap" id="pbsetTriggerWrap">
+          <button class="pbset-trigger-btn" id="pbsetTriggerBtn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            動画再生設定
+            <svg class="pbset-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="10" height="10"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+        </div>
+
+        <div id="relatedList" class="related-list">
+          <!-- skeletons injected by JS -->
+        </div>
+        <div class="sidebar-chat-container" id="sidebarChatContainer" hidden>
+          <iframe id="chatIframeMain" class="sidebar-chat-iframe" title="チャット"></iframe>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <!-- Floating Playback Settings Panel -->
+  <div class="pbset-panel" id="pbsetPanel">
+    <!-- Title bar / drag handle -->
+    <div class="pbset-panel-titlebar" id="pbsetDragHandle">
+      <span class="pbset-panel-title">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        動画再生設定
+      </span>
+      <button class="pbset-panel-close" id="pbsetCloseBtn" title="閉じる">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <!-- Tab bar -->
+    <div class="pbset-tabs">
+      <button class="pbset-tab active" data-tab="playback">再生方法</button>
+      <button class="pbset-tab" data-tab="settings">再生設定</button>
+    </div>
+
+    <!-- Tab: 再生方法 -->
+    <div class="pbset-tab-content" id="pbsetTabPlayback">
+      <!-- Pending apply bar -->
+      <div class="pbset-pending-bar" id="pbsetPendingBar" style="display:none">
+        <span class="pbset-pending-label" id="pbsetPendingLabel"></span>
+        <button class="pbset-apply-btn" id="pbsetApplyBtn">再生方法を変更する</button>
+      </div>
+      <div class="pbset-panel-body">
+        <div class="pbset-section">
+          <div class="pbset-section-label">再生モード</div>
+          <div class="pbset-mode-row" id="pbsetModeRow"></div>
+        </div>
+        <div class="pbset-section" id="pbsetTrackSection" style="display:none">
+          <div class="pbset-section-label">トラック</div>
+          <div class="pbset-mode-row" id="pbsetTrackRow"></div>
+        </div>
+        <div class="pbset-section" id="pbsetEduSection" style="display:none">
+          <div class="pbset-section-label">Edu パラメータ</div>
+          <div class="pbset-qual-list" id="pbsetEduParamList"></div>
+        </div>
+        <div class="pbset-section" id="pbsetQualSection" style="display:none">
+          <div class="pbset-section-label" id="pbsetQualLabel">画質</div>
+          <div class="pbset-qual-list" id="pbsetQualContent"></div>
+        </div>
+        <div class="pbset-section" id="pbsetInfoSection" style="display:none">
+          <div class="pbset-section-label">ストリーム情報</div>
+          <div class="pbset-info-list" id="pbsetInfoContent"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: 再生設定 -->
+    <div class="pbset-tab-content" id="pbsetTabSettings" style="display:none">
+      <div class="pbset-panel-body">
+        <div class="pbset-section">
+          <div class="pbset-set-row">
+            <span class="pbset-set-label">ループ</span>
+            <button class="pbset-toggle-btn" id="pbsetLoopToggle" data-real="pbLoopToggle">
+              <span class="pbset-toggle-track"><span class="pbset-toggle-knob"></span></span>
+            </button>
+          </div>
+        </div>
+        <div class="pbset-section">
+          <div class="pbset-set-row">
+            <span class="pbset-set-label">自動再生</span>
+            <button class="pbset-toggle-btn" id="pbsetAutoplayToggle" data-real="pbAutoplayToggle">
+              <span class="pbset-toggle-track"><span class="pbset-toggle-knob"></span></span>
+            </button>
+          </div>
+        </div>
+        <div class="pbset-section">
+          <div class="pbset-set-row">
+            <span class="pbset-set-label">再生位置を保存</span>
+            <button class="pbset-toggle-btn" id="pbsetSavePosToggle" data-real="pbSavePositionToggle">
+              <span class="pbset-toggle-track"><span class="pbset-toggle-knob"></span></span>
+            </button>
+          </div>
+        </div>
+        <div class="pbset-section">
+          <div class="pbset-set-row">
+            <span class="pbset-set-label">次へ自動再生</span>
+            <button class="pbset-toggle-btn" id="pbsetAutoNextToggle" data-real="pbAutoNextToggle">
+              <span class="pbset-toggle-track"><span class="pbset-toggle-knob"></span></span>
+            </button>
+          </div>
+        </div>
+        <div class="pbset-section">
+          <div class="pbset-section-label">再生速度</div>
+          <div class="pbset-mode-row pbset-speed-row">
+            <button class="pbset-speed-btn" data-speed="0.25">0.25×</button>
+            <button class="pbset-speed-btn" data-speed="0.5">0.5×</button>
+            <button class="pbset-speed-btn" data-speed="0.75">0.75×</button>
+            <button class="pbset-speed-btn active" data-speed="1">1×</button>
+            <button class="pbset-speed-btn" data-speed="1.25">1.25×</button>
+            <button class="pbset-speed-btn" data-speed="1.5">1.5×</button>
+            <button class="pbset-speed-btn" data-speed="1.75">1.75×</button>
+            <button class="pbset-speed-btn" data-speed="2">2×</button>
+            <button class="pbset-speed-btn" data-speed="3">3×</button>
+          </div>
+        </div>
+        <div class="pbset-section">
+          <div class="pbset-section-label">音量</div>
+          <div class="pbset-vol-row">
+            <button class="pbset-mute-btn" id="pbsetMuteBtn" title="ミュート切替"></button>
+            <input type="range" class="pbset-vol-slider" id="pbsetVolSlider" min="0" max="1" step="0.02" value="1">
+            <span class="pbset-vol-val" id="pbsetVolVal">100%</span>
+          </div>
+        </div>
+        <div class="pbset-section">
+          <div class="pbset-section-label">ストリーム取得元</div>
+          <div class="pbset-mode-row" id="pbsetStreamSrcRow">
+            <button class="pbset-mode-btn" data-src="auto">自動(並列)</button>
+            <button class="pbset-mode-btn" data-src="invidious">Invidious</button>
+            <button class="pbset-mode-btn" data-src="rapidapi">RapidAPI</button>
+            <button class="pbset-mode-btn" data-src="zernio">Zernio</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resize handle -->
+    <div class="pbset-resize-handle" id="pbsetResizeHandle"></div>
+  </div>
+
+  <!-- Download Modal -->
+  <div class="dl-modal-backdrop" id="dlModalBackdrop" hidden>
+    <div class="dl-modal" id="dlModal">
+      <div class="dl-modal-header">
+        <h2 class="dl-modal-title">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          ダウンロード
+        </h2>
+        <div class="dl-modal-header-right">
+          <a class="dl-modal-page-link" id="dlModalPageLink" href="#" target="_blank" rel="noopener noreferrer" title="専用ダウンロードページを開く">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            専用ページ
+          </a>
+          <button class="dl-modal-close" id="dlModalClose">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="dl-modal-body" id="dlModalBody">
+      </div>
+    </div>
+  </div>
+
+  <!-- Keyboard Shortcut Help Modal -->
+  <div class="kb-modal-backdrop" id="kbModalBackdrop" hidden>
+    <div class="kb-modal" id="kbModal">
+      <div class="kb-modal-header">
+        <h2 class="kb-modal-title">キーボードショートカット</h2>
+        <button class="kb-modal-close" id="kbModalClose">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="kb-modal-body">
+        <div class="kb-section">
+          <div class="kb-row"><kbd>Space</kbd><kbd>K</kbd><span>再生 / 一時停止</span></div>
+          <div class="kb-row"><kbd>←</kbd><kbd>J</kbd><span>5秒戻る (Shift: 10秒)</span></div>
+          <div class="kb-row"><kbd>→</kbd><kbd>L</kbd><span>5秒進む (Shift: 10秒)</span></div>
+          <div class="kb-row"><kbd>↑</kbd><span>音量を上げる</span></div>
+          <div class="kb-row"><kbd>↓</kbd><span>音量を下げる</span></div>
+          <div class="kb-row"><kbd>M</kbd><span>ミュート切替</span></div>
+          <div class="kb-row"><kbd>F</kbd><span>フルスクリーン</span></div>
+          <div class="kb-row"><kbd>T</kbd><span>シアターモード</span></div>
+          <div class="kb-row"><kbd>P</kbd><span>ピクチャーインピクチャー</span></div>
+          <div class="kb-row"><kbd>0</kbd>〜<kbd>9</kbd><span>動画の0〜90%位置にジャンプ</span></div>
+          <div class="kb-row"><kbd>,</kbd><span>1フレーム戻る</span></div>
+          <div class="kb-row"><kbd>.</kbd><span>1フレーム進む</span></div>
+          <div class="kb-row"><kbd>&lt;</kbd><span>再生速度を下げる</span></div>
+          <div class="kb-row"><kbd>&gt;</kbd><span>再生速度を上げる</span></div>
+          <div class="kb-row"><kbd>?</kbd><span>このヘルプを表示</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  const CHAT_MAIN_URL = '/chat?embed=1';
+
+  const toggleBtn     = document.getElementById('chatToggleBtn');
+  const relatedList   = document.getElementById('relatedList');
+  const chatContainer = document.getElementById('sidebarChatContainer');
+  const relatedTitle  = document.getElementById('relatedTitle');
+  const iframeMain    = document.getElementById('chatIframeMain');
+
+  if (!toggleBtn || !relatedList || !chatContainer) return;
+
+  let chatOpen = false;
+  let loaded = false;
+
+  const pbsetWrap = document.getElementById('pbsetTriggerWrap');
+
+  function openChat() {
+    chatOpen = true;
+    relatedList.hidden = true;
+    if (pbsetWrap) pbsetWrap.hidden = true;
+    const _pp = document.getElementById('pbsetPanel');
+    if (_pp) { _pp.classList.remove('pbset-visible'); document.getElementById('pbsetTriggerBtn')?.classList.remove('pbset-open'); }
+    chatContainer.hidden = false;
+    toggleBtn.classList.add('is-chat-active');
+    relatedTitle.textContent = 'チャット';
+    toggleBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg> 関連動画';
+    if (!loaded) {
+      iframeMain.src = CHAT_MAIN_URL;
+      loaded = true;
+    }
+  }
+
+  function closeChat() {
+    chatOpen = false;
+    chatContainer.hidden = true;
+    relatedList.hidden = false;
+    if (pbsetWrap) pbsetWrap.hidden = false;
+    toggleBtn.classList.remove('is-chat-active');
+    relatedTitle.textContent = '関連動画';
+    toggleBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> チャット';
+  }
+
+  toggleBtn.addEventListener('click', function () {
+    if (chatOpen) { closeChat(); } else { openChat(); }
+  });
+})();
+</script>
+{% endblock %}

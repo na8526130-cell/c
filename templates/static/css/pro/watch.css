@@ -1,0 +1,12 @@
+/* ===== PRO THEME – WATCH PAGE OVERRIDES ===== */
+/* Overrides only the ~30 lines that differ from the base (watch.css).   */
+/* All shared rules live in watch.css which is loaded first.             */
+body.page-watch {
+  --w-a1:   139, 69, 19;   /* primary accent RGB (brown) */
+  --w-a2:   160, 82, 45;   /* secondary accent RGB */
+  --w-adk:  #6f3a1d;       /* accent dark – gradient end */
+  --w-dbg:  26, 14, 8;     /* dark backdrop RGB */
+  --w-ok:   #d4a373;       /* status ok (warm amber) */
+  --w-fail: #d49060;       /* status fail (warm orange) */
+  --w-yt:   #c0392b;       /* YouTube brand red (pro) */
+}

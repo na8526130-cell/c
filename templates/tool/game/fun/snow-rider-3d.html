@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snow Rider 3D</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; background: #030d1a; overflow: hidden; }
+    #loading-screen {
+      position: fixed; inset: 0; background: #030d1a;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 20px; z-index: 100;
+    }
+    #loading-screen .thumb {
+      width: 280px; height: 158px; object-fit: cover; border-radius: 12px;
+      border: 2px solid #7dd3fc55; box-shadow: 0 4px 24px #7dd3fc44;
+    }
+    #loading-screen h2 {
+      font-family: 'Segoe UI', sans-serif; font-size: 22px;
+      background: linear-gradient(90deg, #7dd3fc, #bae6fd);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    #loading-screen .progress-wrap { width: 300px; height: 6px; background: #0a1f3d; border-radius: 3px; overflow: hidden; }
+    #loading-screen .progress-fill {
+      height: 100%; background: linear-gradient(90deg, #38bdf8, #7dd3fc);
+      width: 0%; transition: width 0.2s; border-radius: 3px;
+    }
+    #loading-screen .pct { font-family: monospace; color: #4a8aaa; font-size: 13px; }
+    #loading-screen .cdn-label { font-family: monospace; color: #1a4060; font-size: 11px; }
+    .webgl-content { width: 100%; height: 100%; }
+    #gameContainer { width: 100%; height: 100%; display: none; }
+  </style>
+</head>
+<body>
+<div id="loading-screen">
+  <img class="thumb" src="https://freezenova.com/lessons/snowrider3d.webp" alt="Snow Rider 3D" onerror="this.style.display='none'">
+  <h2>🎿 Snow Rider 3D</h2>
+  <div class="progress-wrap"><div class="progress-fill" id="pf"></div></div>
+  <div class="pct" id="pct">0%</div>
+  <div class="cdn-label" id="cdn-label">CDNに接続中...</div>
+</div>
+<div class="webgl-content">
+  <div id="gameContainer"></div>
+</div>
+<script>
+var CDN_PROVIDERS = [
+  "https://cdn.jsdelivr.net/gh/kuru-bana/Games@main/Other",
+  "https://raw.githubusercontent.com/kuru-bana/Games/main/Other"
+];
+
+function loadWithFallback(subpath, onSuccess, onFail) {
+  var providers = CDN_PROVIDERS.slice(), idx = 0;
+  function tryNext() {
+    if (idx >= providers.length) { if (onFail) onFail(); return; }
+    var base = providers[idx++];
+    document.getElementById('cdn-label').textContent =
+      (base.includes('jsdelivr') ? 'jsDelivr' : 'GitHub Raw') + ' から読み込み中...';
+    var s = document.createElement('script');
+    s.src = base + subpath;
+    s.onload = function() { onSuccess(base); };
+    s.onerror = tryNext;
+    document.body.appendChild(s);
+  }
+  tryNext();
+}
+
+loadWithFallback('/snow-rider-3d/Build/UnityLoader.js',
+  function(base) {
+    var B = base + '/snow-rider-3d/Build';
+    var T = base + '/snow-rider-3d/TemplateData';
+
+    var progressScript = document.createElement('script');
+    progressScript.src = T + '/UnityProgress.js';
+    progressScript.onload = function() {
+      var gameConfig = {
+        companyName: "Snow Rider",
+        productName: "Snow Rider 3D",
+        dataUrl: B + "/SnowRider3D-gd-1.data.unityweb",
+        wasmCodeUrl: B + "/SnowRider3D-gd-1.wasm.code.unityweb",
+        wasmFrameworkUrl: B + "/SnowRider3D-gd-1.wasm.framework.unityweb",
+        TOTAL_MEMORY: 268435456,
+        graphicsAPI: ["WebGL 2.0", "WebGL 1.0"],
+        webglContextAttributes: { preserveDrawingBuffer: false },
+        splashScreenStyle: "Dark",
+        backgroundColor: "#231F20"
+      };
+      var blob = new Blob([JSON.stringify(gameConfig)], { type: 'application/json' });
+      var configUrl = URL.createObjectURL(blob);
+
+      document.getElementById('loading-screen').style.display = 'none';
+      document.getElementById('gameContainer').style.display = 'block';
+
+      UnityLoader.instantiate("gameContainer", configUrl, {
+        onProgress: UnityProgress,
+        Module: {
+          onRuntimeInitialized: function() {
+            UnityProgress(this, "complete");
+          }
+        }
+      });
+    };
+    progressScript.onerror = function() {
+      document.getElementById('loading-screen').innerHTML =
+        '<h2 style="color:#ef4444;font-family:sans-serif;">読み込みに失敗しました</h2>';
+    };
+    document.body.appendChild(progressScript);
+  },
+  function() {
+    document.getElementById('loading-screen').innerHTML =
+      '<h2 style="color:#ef4444;font-family:sans-serif;">CDNからの読み込みに失敗しました</h2>' +
+      '<p style="color:#888;font-family:sans-serif;font-size:13px;">jsDelivr・GitHub Raw どちらも応答なし</p>';
+  }
+);
+</script>
+</body>
+</html>
