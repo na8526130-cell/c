@@ -9,7 +9,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.APPLET_ID ? 3000 : (process.env.PORT || 3000);
 
 // Middleware
 app.use(express.json());
@@ -390,7 +390,7 @@ app.get('/tool/youtube/ikura', (req, res) => {
 });
 
 let wistaHtmlCache = null;
-app.get('/tool/youtube/wista*', (req, res) => {
+function serveWista(req, res) {
   if (!wistaHtmlCache) {
     const raw = fs.readFileSync(path.join(__dirname, 'templates/tool/youtube/wista.html'), 'utf-8');
     const autoHome = '<script>(function(){var p=window.location.pathname;var B="/tool/youtube/wista";if((p===B||p===B+"/")&&localStorage.getItem("tube_auth")){history.replaceState(null,"",B+"/home");}})();</script>';
@@ -399,7 +399,8 @@ app.get('/tool/youtube/wista*', (req, res) => {
       .replace('<head>', '<head>' + autoHome);
   }
   res.send(wistaHtmlCache);
-});
+}
+app.use('/tool/youtube/wista', serveWista);
 
 // Games
 app.get('/tool/game', (req, res) => {
@@ -577,10 +578,10 @@ app.get('/api/piped-suggestions', async (req, res) => {
 });
 
 // Main & Stream Invidious Proxy
-app.get('/proxy/main/*', async (req, res) => {
-  const restPath = req.params[0] || '';
-  const qs = new URL(req.url, `http://${req.headers.host}`).search;
-  const appPath = '/' + restPath + qs;
+app.use('/proxy/main', async (req, res) => {
+  const host = req.headers.host || 'localhost:3000';
+  const qs = new URL(req.originalUrl || req.url, `http://${host}`).search;
+  const appPath = (req.path.startsWith('/') ? req.path : '/' + req.path) + qs;
   const { invidiousPath } = mapPath(appPath);
 
   try {
@@ -591,13 +592,13 @@ app.get('/proxy/main/*', async (req, res) => {
   }
 });
 
-app.get('/proxy/stream/*', async (req, res) => {
-  const restPath = req.params[0] || '';
+app.use('/proxy/stream', async (req, res) => {
+  const host = req.headers.host || 'localhost:3000';
   const query = { ...req.query };
   const excludeList = (query.exclude || '').split(',').map(s => s.trim()).filter(Boolean);
   delete query.exclude;
   const qs = new URLSearchParams(query).toString();
-  const appPath = '/' + restPath + (qs ? '?' + qs : '');
+  const appPath = (req.path.startsWith('/') ? req.path : '/' + req.path) + (qs ? '?' + qs : '');
   const { invidiousPath } = mapPath(appPath);
 
   try {
@@ -639,20 +640,13 @@ app.get('/download', async (req, res) => {
 });
 
 // Wista SPA fallback
-app.get('*', (req, res) => {
+app.use((req, res) => {
   const p = req.path;
   if (p.startsWith('/__replco') || p.startsWith('/@') || p.startsWith('/node_modules') ||
       p.endsWith('.js') || p.endsWith('.ts') || p.endsWith('.map')) {
     return res.status(404).send('Not found');
   }
-  if (!wistaHtmlCache) {
-    const raw = fs.readFileSync(path.join(__dirname, 'templates/tool/youtube/wista.html'), 'utf-8');
-    const autoHome = '<script>(function(){var p=window.location.pathname;var B="/tool/youtube/wista";if((p===B||p===B+"/")&&localStorage.getItem("tube_auth")){history.replaceState(null,"",B+"/home");}})();</script>';
-    wistaHtmlCache = raw
-      .replace('basename:t="/"', 'basename:t="/tool/youtube/wista"')
-      .replace('<head>', '<head>' + autoHome);
-  }
-  res.send(wistaHtmlCache);
+  serveWista(req, res);
 });
 
 app.listen(PORT, '0.0.0.0', () => {
